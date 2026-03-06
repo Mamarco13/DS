@@ -15,9 +15,6 @@ class ScrapSelenium(EstrategiaScrap):
     def scrap(self, pages):
         options = Options()
         options.add_argument("--headless=new")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--disable-gpu")
 
         driver = webdriver.Chrome(options=options)
 
@@ -41,7 +38,7 @@ class ScrapSelenium(EstrategiaScrap):
                 for page in range(1, pages + 1):
                     url = f"{self.PaginaWeb}?page_num={page}"
                     driver.get(url)
-                    print(f"Scrapeando en {url}")
+                    print(f"Scrapeando página {page}")
 
                     WebDriverWait(driver, 10).until(
                         EC.presence_of_all_elements_located((By.CSS_SELECTOR, "tr.team"))
@@ -71,8 +68,6 @@ class ScrapSelenium(EstrategiaScrap):
                             goles_contra,
                             diferencia
                         ])
-
-            print("CSV generado en ./csv/ScrapSelenium.csv")
 
         finally:
             driver.quit()

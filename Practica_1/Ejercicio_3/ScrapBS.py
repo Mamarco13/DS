@@ -12,7 +12,6 @@ class ScrapBS(EstrategiaScrap):
     def scrap(self, pages):
         # Asegura URL base correcta (sin dobles // raros)
         base_url = self.PaginaWeb.rstrip("/") + "/"
-        print(f"URL base para scrapear: {base_url}")
 
         with open("./csv/ScrapBS.csv", "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
@@ -20,7 +19,6 @@ class ScrapBS(EstrategiaScrap):
 
             for page in range(1, pages + 1):
                 scrapearEn = base_url + "?page_num=" + str(page)
-                print(f"Scrapeando en {scrapearEn}")
 
                 response = requests.get(scrapearEn, timeout=20)
                 response.raise_for_status()
