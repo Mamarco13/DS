@@ -19,3 +19,7 @@ La información extraída se debe guardar en un archivo **CSV**. El programa deb
 
 * **BeautifulSoup**: Empleando requests y BeautifulSoup para obtener y parsear el HTML estático.
 * **Selenium**: Utilizando Selenium WebDriver para acceder al navegador (en modo headless), procesar el HTML y extraer los elementos del DOM
+
+#### *Diagrama UML de la solución propuesta*
+
+![UML_Ej3](Practica_1/Ejercicio_3/UML_Ej3.png)
