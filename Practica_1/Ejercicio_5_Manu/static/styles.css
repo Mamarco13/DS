@@ -4,6 +4,10 @@
     padding: 0;
 }
 
+/* -------------------------- */
+/* PAGINAS INICIAL            */
+/* -------------------------- */
+
 :root {
     --bg: #0b1020;
     --panel: rgba(18, 25, 46, 0.78);
@@ -306,6 +310,113 @@ body {
     gap: 6px;
     color: var(--muted);
     font-size: 0.92rem;
+}
+
+/* -------------------------- */
+/* PAGINAS ZEUS Y LIMITES     */
+/* -------------------------- */
+
+.config-container{
+    max-width:800px;
+    margin:auto;
+    padding:40px;
+}
+
+.config-card{
+    background:rgba(18,25,46,0.85);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:24px;
+    padding:40px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.35);
+}
+
+.config-card h2{
+    font-size:2rem;
+    margin-bottom:25px;
+    font-weight:700;
+}
+
+.config-form{
+    display:grid;
+    gap:18px;
+}
+
+.config-form label{
+    font-size:0.9rem;
+    color:var(--muted);
+}
+
+.config-form input{
+
+    padding:14px;
+    border-radius:12px;
+
+    border:1px solid rgba(255,255,255,0.1);
+    background:rgba(255,255,255,0.05);
+
+    color:white;
+    font-size:1rem;
+
+    transition:0.2s;
+}
+
+.config-form input:focus{
+
+    outline:none;
+
+    border:1px solid var(--accent);
+
+    background:rgba(255,255,255,0.08);
+}
+
+.config-button{
+
+    margin-top:10px;
+
+    padding:14px;
+
+    border:none;
+    border-radius:14px;
+
+    font-size:1rem;
+    font-weight:600;
+
+    cursor:pointer;
+
+    color:#06101f;
+
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+
+    transition:0.2s;
+}
+
+.config-button:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 10px 25px rgba(0,0,0,0.35);
+}
+
+.zeus-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:20px;
+
+}
+
+/* -------------------------- */
+/* MEDIA QUERIES              */
+/* -------------------------- */
+
+@media(max-width:700px){
+
+    .zeus-grid{
+        grid-template-columns:1fr;
+    }
+
 }
 
 @media (max-width: 1100px) {

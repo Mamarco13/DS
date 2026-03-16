@@ -10,7 +10,7 @@ app = Flask(__name__)
 # Estado del sistema domótico
 # -----------------------------
 
-exteriorReal = ServicioAmericano(None)  # Fetches data from API
+exteriorReal = ServicioAmericano(None)  #Usar API
 T_exterior = exteriorReal.getTemperatura()
 
 temperaturas_f = {
