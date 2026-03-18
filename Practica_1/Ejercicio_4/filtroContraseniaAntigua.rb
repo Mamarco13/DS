@@ -1,10 +1,10 @@
-class ContraseniaAntigua < IFiltro
+require 'json'
+class ContraseniaAntigua include IFiltro
     def filtrar(string)
-        if string == "contrasenia123"
-            puts "La contraseña no es válida2"
+        contenido = JSON.parse(File.read("contrasenias.json"))
+        if contenido["Contrasenias"].include?(string)
             return false
         else
-            puts "La contraseña es válida2"
             return true
         end
     end

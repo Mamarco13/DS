@@ -1,4 +1,4 @@
-class FiltroArroba < IFiltro
+class FiltroArroba include IFiltro
     def filtrar(string)
         if string.include?("@")
             return true
