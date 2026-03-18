@@ -19,8 +19,6 @@ managerFiltros2 = ManagerFiltros.new(Target.new)
 managerFiltros2.agregar_filtro(ContraseniaAntigua.new)
 managerFiltros2.agregar_filtro(FiltroCaracterEspecial.new)
 managerFiltros2.agregar_filtro(FiltroLongitud.new)
-puts managerFiltros.get_filtros().length()                                  #ES CULPA DE @@filtros
-puts managerFiltros2.get_filtros().length()                                 #MIRA POR AHI, QUIZAS HAY QUE CAMBIAR TODOS LOS @@ por @
 cliente = Cliente.new
 puts "Ingrese una usuario para validar:"
 usuario = gets.chomp
