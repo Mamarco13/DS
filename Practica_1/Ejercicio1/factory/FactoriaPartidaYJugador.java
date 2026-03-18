@@ -6,6 +6,6 @@ import Practica_1.Ejercicio1.partida.Partida;
 
 public interface FactoriaPartidaYJugador {
 
-    Partida crearPartida();
+    Partida crearPartida(int numJugadores);
     Jugador crearJugador(int id);
 }
