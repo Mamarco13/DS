@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Casa Domótica</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    </head>
+    <body>
+        <div class="app-shell">
+            <!-- SIDEBAR -->
+            <aside class="sidebar">
+                <div class="brand">
+                    <div class="brand-icon">⌂</div>
+                    <div>
+                        <h1>Smart Home</h1>
+                        <p>Panel domótico</p>
+                    </div>
+                </div>
+
+                <nav class="menu">
+                    <a href="/" class="menu-item active">Inicio</a>
+                    <a href="/limites" class="menu-item">Límites</a>
+                    <a href="/zeus" class="menu-item">Zeus</a>
+                </nav>
+
+                <div class="status-card">
+                    <p class="status-label">Estado de la vivienda</p>
+
+                    <p class="status-value">
+                    {{ estado_casa | default("Todo en orden") }}
+                    </p>
+
+                    <span class="status-dot"></span>
+                </div>
+            </aside>
+
+
+            <!-- CONTENIDO -->
+            <main class="dashboard">
+
+                <header class="topbar">
+                    <div>
+                        <p class="eyebrow">Casa principal</p>
+                        <h2>Panel térmico</h2>
+                    </div>
+
+                    <div class="topbar-right">
+                        <span class="chip">API OpenMeteo</span>
+                    </div>
+                </header>
+
+
+                <!-- TEMPERATURA PRINCIPAL -->
+                <section class="hero-panel">
+                    <div class="hero-left">
+                        <p class="hero-label">Temperatura media</p>
+                        <div class="main-temp">
+                            {{ temperatura_principal_c | default(22) }}
+                            <span>°C</span>
+                        </div>
+                        <p class="hero-subtitle">
+                            Datos obtenidos desde el servicio domótico
+                        </p>    
+                    </div>
+
+                    <div class="hero-right">
+                        <div class="mini-stat">
+                            <span class="mini-stat-title">Exterior</span>
+                            <strong>{{ exterior_c | default(18) }}°C</strong>
+                        </div>
+                        <div class="mini-stat">
+                            <span class="mini-stat-title">Exterior</span>
+                            <strong class="fahrenheit">{{ exterior_f | default(64.4) }}°F</strong>
+                        </div>  
+                    </div>
+                </section>
+
+
+                <!-- Habitaciones -->
+                <section class="rooms-section">
+                    <div class="section-title-row">
+                        <h3>Estancias</h3>
+                    </div>
+
+                    <div class="rooms-grid">
+                        <!-- SALON -->
+                        <article class="room-card">
+                            <div class="room-header">
+                                <h4>Salón</h4>
+                                <span class="room-icon">🛋️</span>
+                            </div>
+                            <div class="room-temp">
+                                <span class="temp-big">{{ salon_c | default(23) }}°C</span>
+                                <span class="temp-small">{{ salon_f | default(73.4) }}°F</span>
+                            </div>
+                        </article>
+
+                        <!-- COCINA -->
+                        <article class="room-card">
+                            <div class="room-header">
+                                <h4>Cocina</h4>
+                                <span class="room-icon">🍳</span>
+                            </div>
+                            <div class="room-temp">
+                                <span class="temp-big">{{ cocina_c | default(24) }}°C</span>
+                                <span class="temp-small">{{ cocina_f | default(75.2) }}°F</span>
+                            </div>
+                        </article>
+
+                        <!-- DORMITORIO -->
+                        <article class="room-card">
+                            <div class="room-header">
+                                <h4>Dormitorio</h4>
+                                <span class="room-icon">🛏️</span>
+                            </div>
+                            <div class="room-temp">
+                                <span class="temp-big">{{ dormitorio_c | default(21) }}°C</span>
+                                <span class="temp-small">{{ dormitorio_f | default(69.8) }}°F</span>
+                            </div>
+                        </article>
+
+                        <!-- BAÑO -->
+                        <article class="room-card">
+                            <div class="room-header">
+                                <h4>Baño</h4>
+                                <span class="room-icon">🛁</span>
+                            </div>
+                            <div class="room-temp">
+                                <span class="temp-big">{{ bano_c | default(25) }}°C</span>
+                                <span class="temp-small">{{ bano_f | default(77) }}°F</span>
+                            </div>
+                        </article>
+
+
+                        <!-- DESPACHO -->
+                        <article class="room-card">
+                            <div class="room-header">
+                                <h4>Despacho</h4>
+                                <span class="room-icon">💻</span>
+                            </div>
+                            <div class="room-temp">
+                                <span class="temp-big">{{ despacho_c | default(22) }}°C</span>
+                                <span class="temp-small">{{ despacho_f | default(71.6) }}°F</span>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </body>
+</html>
