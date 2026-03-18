@@ -27,13 +27,13 @@ def main():
     # 4. Combinación (traducción + sentimiento)
     # Orden: primero resumimos, luego analizamos y por último traducimos
 
-    combined_llm = TranslationDecorator(
-        SentimentDecorator(
+    combined_llm = SentimentDecorator(
+        TranslationDecorator(
             basic_llm,
-            model_sentiment,
+            model_translation,
             token
         ),
-        model_translation,
+        model_sentiment,
         token
     )
     combined_result = combined_llm.generate_summary(text)

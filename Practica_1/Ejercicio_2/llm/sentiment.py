@@ -1,10 +1,9 @@
 from .decorator import LLMDecorator
 
 class SentimentDecorator(LLMDecorator):
-    def __init__(self, llm, model_sentiment: str, api_token: str):
+    def __init__(self, llm, model_sentiment: str):
         super().__init__(llm)
         self.model_sentiment = model_sentiment
-        self.api_token = api_token
 
     def generate_summary(self, text: str) -> str:
         summary = self.llm.generate_summary(text)
