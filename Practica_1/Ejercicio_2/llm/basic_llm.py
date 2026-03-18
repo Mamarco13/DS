@@ -6,5 +6,12 @@ class BasicLLM(LLM):
         self.model_llm = model_llm
 
     def generate_summary(self, text: str) -> str:
-        # Aquí llamaríamos a la API
-        return "Resumen generado por BasicLLM"
+        response = self.query(
+            self.model_llm,
+            {"inputs": text}
+        )
+
+        try:
+            return response[0]['summary_text']
+        except Exception: 
+            return f"[Error en resumen]: {response}"

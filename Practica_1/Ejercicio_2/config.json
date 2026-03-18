@@ -3,5 +3,5 @@
   "model_llm": "facebook/bart-large-cnn",
   "model_translation": "Helsinki-NLP/opus-mt-en-ro",
   "model_sentiment": "nlptown/bert-base-multilingual-uncased-sentiment",
-  "huggingface_api_token": "TU_TOKEN_AQUI"
+  "huggingface_api_token": "TU_TOKEN"
 }

@@ -7,8 +7,11 @@ class TranslationDecorator(LLMDecorator):
 
     def generate_summary(self, text: str) -> str:
         summary = self.llm.generate_summary(text)
+        
+        reponse = self.query(
+            self.model_translation,
+            {"inputs": summary}
+        )
 
-        # Aquí llamaríamos a la API de traducción
-        translation = "Traducción al inglés"  # Resultado simulado
-
-        return f"{summary}\nTraducción: {translation}"
+        try:
+            return reponse[0]['translation_text']
