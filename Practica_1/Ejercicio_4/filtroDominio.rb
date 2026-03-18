@@ -1,4 +1,4 @@
-class FiltroDominio < IFiltro
+class FiltroDominio include IFiltro
     def filtrar(string)
         if string.split("@").last == "gmail.com" or string.split("@").last == "hotmail.com"
             return true

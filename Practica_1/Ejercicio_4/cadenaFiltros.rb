@@ -21,13 +21,15 @@ class CadenaFiltros
         for filtro in @filtros
             if !filtro.filtrar(string)
                 @target.non_execute(string)
-                return
+                return false
             end
         end
         if @target != nil
             @target.execute(string)
+            return true
         else
             puts "No se ha establecido un target"
+            return false
         end
     end
 end
