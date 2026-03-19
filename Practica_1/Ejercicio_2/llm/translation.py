@@ -7,11 +7,13 @@ class TranslationDecorator(LLMDecorator):
 
     def generate_summary(self, text: str) -> str:
         summary = self.llm.generate_summary(text)
-        
-        reponse = self.query(
+
+        response = self.query(
             self.model_translation,
             {"inputs": summary}
         )
 
         try:
-            return reponse[0]['translation_text']
+            return response[0]["translation_text"]
+        except Exception:
+            return f"[ERROR en traducción]: {response}"

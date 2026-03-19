@@ -5,5 +5,5 @@ class LLMDecorator(LLM):
         super().__init__(llm.api_token)
         self.llm = llm
 
-    def generate_sumary(self, text: str) -> str:
+    def generate_summary(self, text: str) -> str:
         return self.llm.generate_summary(text)

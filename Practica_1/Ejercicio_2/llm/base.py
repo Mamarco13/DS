@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import requests
 
 class LLM(ABC):
     def __init__(self, api_token: str):
@@ -12,7 +13,14 @@ class LLM(ABC):
         }
 
         response = requests.post(api_url, headers=headers, json=payload)
-        return response.json()
+
+        content_type = response.headers.get("content-type", "")
+
+        # Detectar si la respuesta es una imagen
+        if "application/json" in content_type or "text" in content_type:
+            return response.json()
+        else:
+            return response # para binarios (imagen)
 
     @abstractmethod
     def generate_summary(self, text: str) -> str:

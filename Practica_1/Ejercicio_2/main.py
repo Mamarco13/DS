@@ -1,8 +1,26 @@
 import json
-from llm import BasicLLM, TranslationDecorator, SentimentDecorator
+from llm import BasicLLM, TranslationDecorator, SentimentDecorator, ImageDecorator
 
+# IMPRESIÓN DE RESULTADOS
+
+# Métodos auxiliares para indicar el progreso
+def print_step(message):
+    print(f"\n[*] {message}...")
+
+def print_done(message="Completado"):
+    print(f"[OK] {message}")
+
+# Muestra el título centrado y el contenido debajo, separado por líneas
+def print_section(title, content):
+    print("\n" + "=" * 60)
+    print(f"{title.center(60)}")
+    print("=" * 60)
+    print(content)
+
+# Función principal
 def main():
-    # Leemos la configuración
+
+    # Leemos la configuación
     with open("config.json", "r", encoding="utf-8") as f:
         config = json.load(f)
 
@@ -10,49 +28,60 @@ def main():
     model_llm = config["model_llm"]
     model_translation = config["model_translation"]
     model_sentiment = config["model_sentiment"]
+    model_image = config["model_image"]
+    output_file = config["output_file"]
     token = config["huggingface_api_token"]
 
-    # 1. LLM básico
     basic_llm = BasicLLM(model_llm, token)
+
+    # 🔹 Texto original
+
+    print_section("ORIGINAL TEXT", text)
+
+    # 🔹 Resumen
+    print_step("Generando resumen")
     basic_result = basic_llm.generate_summary(text)
+    print_done("Resumen generado")
 
-    # 2. Traducción
-    translation_llm = TranslationDecorator(basic_llm, model_translation, token)
+    print_section("BASIC SUMMARY", basic_result)
+
+    # 🔹 Traducción
+    print_step("Traduciendo texto")
+    translation_llm = TranslationDecorator(basic_llm, model_translation)
     translation_result = translation_llm.generate_summary(text)
+    print_done("Traducción completada")
 
-    # 3. Sentimiento
-    sentiment_llm = SentimentDecorator(basic_llm, model_sentiment, token) 
+    print_section("TRANSLATION", translation_result)
+
+    # 🔹 Sentimiento
+    print_step("Analizando sentimiento")
+    sentiment_llm = SentimentDecorator(basic_llm, model_sentiment)
     sentiment_result = sentiment_llm.generate_summary(text)
+    print_done("Análisis completado")
 
-    # 4. Combinación (traducción + sentimiento)
-    # Orden: primero resumimos, luego analizamos y por último traducimos
+    print_section("SENTIMENT", sentiment_result)
 
+    # 🔹 Combinado
+    print_step("Ejecutando combinación (resumen + traducción + sentimiento)")
     combined_llm = SentimentDecorator(
         TranslationDecorator(
             basic_llm,
             model_translation,
-            token
         ),
         model_sentiment,
-        token
     )
     combined_result = combined_llm.generate_summary(text)
+    print_done("Combinación completada")
 
-    # Mostrar resultados
-    print("\n--- ORIGINAL ---")
-    print(text)
+    print_section("COMBINED", combined_result)
 
-    print("\n--- BASIC ---")
-    print(basic_result)
+    # 🔹 Imagen
+    print_step("Convirtiendo texto a imagen")
+    image_llm = ImageDecorator(basic_llm, model_image, output_file)
+    image_result = image_llm.generate_summary(text)
+    print_done("Imagen creada")
 
-    print("\n--- TRANSLATION ---")
-    print(translation_result)
-
-    print("\n--- SENTIMENT ---")
-    print(sentiment_result)
-
-    print("\n--- COMBINED ---")
-    print(combined_result)
+    print_section("IMAGE", image_result)
 
 
 if __name__ == "__main__":

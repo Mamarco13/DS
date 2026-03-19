@@ -12,6 +12,6 @@ class BasicLLM(LLM):
         )
 
         try:
-            return response[0]['summary_text']
-        except Exception: 
-            return f"[Error en resumen]: {response}"
+            return response[0]["summary_text"]
+        except Exception:
+            return f"[ERROR en resumen]: {response}"

@@ -8,8 +8,16 @@ class SentimentDecorator(LLMDecorator):
     def generate_summary(self, text: str) -> str:
         summary = self.llm.generate_summary(text)
 
-        #Aquí llamaríamos a la API de análisis de sentimiento
-        sentiment = "Positivo"  # Resultado simulado
+        response = self.query(
+            self.model_sentiment,
+            {"inputs": summary}
+        )
 
-        return f"{summary}\nSentimiento: {sentiment}"
-    
+        try:
+            scores = response[0]
+            best = max(scores, key=lambda x: x["score"])
+            label = best["label"]
+        except Exception:
+            label = f"ERROR: {response}"
+
+        return label
