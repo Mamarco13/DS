@@ -38,7 +38,7 @@ Un servicio de autenticación requiere validar las credenciales de un usuario (c
 6. La solución debe implementarse obligatoriamente en el lenguaje de programación Ruby.
 
 #### *Diagrama UML de la solución propuesta*
-![Vicente pon aqui el enlace al diagrama](Practica_1/Ejercicio4/nombreDiagrama.png)
+![Ejercicio4UML](Practica_1/Ejercicio4/Ejercicio4UML.png)
 
 
 ### Ejercicio 5
