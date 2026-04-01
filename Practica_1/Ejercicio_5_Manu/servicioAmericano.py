@@ -3,6 +3,7 @@ from urllib import response
 import requests
 
 class ServicioAmericano:
+    
     def __init__(self, temperaturaF):
         if temperaturaF is None:
             # URL de la API
