@@ -1,0 +1,114 @@
+import 'package:flutter/material.dart';
+import '../services/gemini_service.dart';
+
+class ChatScreen extends StatefulWidget {
+  final GeminiService geminiService;
+
+  const ChatScreen({super.key, required this.geminiService});
+
+  @override
+  State<ChatScreen> createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  final TextEditingController _controller = TextEditingController();
+  //Array de mensajes (Lo mismo necesitas mirar aqui para algun decorator??)
+  final List<Map<String, String>> messages = [];
+  bool isLoading = false;
+
+  Future<void> sendMessage() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+
+    // Identificar el mensaje como nuestro, mostrar y rueda de carga mientras esperamos respuesta
+    setState(() {
+      messages.add({"role": "user", "text": text});
+      isLoading = true;
+    });
+
+    _controller.clear();
+
+    final response = await widget.geminiService.sendMessage(text);
+
+    setState(() {
+      // Ahora identificarlo como mensaje del bot, mostrar respuesta y quitar rueda de carga
+      messages.add({"role": "bot", "text": response});
+      isLoading = false;
+    });
+  }
+
+  //Ten en cuenta que luego los mensajes seran tuplas con quien habla y que dice, yo lo veo util para
+  //meter el decorator, si quieres ahorrar en lineas de codigo dime y cambiamos
+
+  Widget buildMessage(Map<String, String> msg) {
+    final isUser = msg["role"] == "user";
+
+    return Container(
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isUser ? Colors.blue : Colors.grey[300],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          msg["text"]!,
+          style: TextStyle(
+            color: isUser ? Colors.white : Colors.black,
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Chat de prueba"),
+      ),
+      body: Column(
+        children: [
+          // Mensajes
+          Expanded(
+            child: ListView.builder(
+              itemCount: messages.length,
+              itemBuilder: (context, index) {
+                return buildMessage(messages[index]);
+              },
+            ),
+          ),
+
+          if (isLoading)
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: CircularProgressIndicator(),
+            ),
+
+          // Input
+          Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: _controller,
+                    decoration: const InputDecoration(
+                      hintText: "Escribe un mensaje...",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.send),
+                onPressed: sendMessage,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

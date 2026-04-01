@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Casa Domótica</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    </head>
+
+    <body>
+        <div class="config-container">
+            <div class="config-card">
+                <h2>Zeus - Control manual</h2>
+                <form method="POST" class="config-form zeus-grid">
+                <label>Salón (°F)</label>
+                    <input type="number" step="0.1" name="salon">
+                    <label>Cocina (°F)</label>
+                    <input type="number" step="0.1" name="cocina">
+                    <label>Dormitorio (°F)</label>
+                    <input type="number" step="0.1" name="dormitorio">
+                    <label>Baño (°F)</label>
+                    <input type="number" step="0.1" name="bano">
+                    <label>Despacho (°F)</label>
+                    <input type="number" step="0.1" name="despacho">
+                    <label>Exterior (°F)</label>
+                    <input type="number" step="0.1" name="exterior">
+                    <button class="config-button">
+                        Actualizar temperaturas
+                    </button>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>
