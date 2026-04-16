@@ -1,10 +1,18 @@
+import 'package:ejercicio_grupal_2/models/secret_keeper.dart';
 import 'package:flutter/material.dart';
 import '../services/gemini_service.dart';
 
-class ChatScreen extends StatefulWidget {
-  final GeminiService geminiService;
+// BORRAR ANTES DE ENTREGAR:
+// Los comentarios que son modificaciones del código de Manu --> Ana
+// Los comentarios en los que he puesto Manu:
 
-  const ChatScreen({super.key, required this.geminiService});
+class ChatScreen extends StatefulWidget {
+
+  //final GeminiService geminiService;
+  final SecretKeeper secretKeeper;
+
+  //const ChatScreen({super.key, required this.geminiService});
+  const ChatScreen({super.key, required this.secretKeeper});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -12,7 +20,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
-  //Array de mensajes (Lo mismo necesitas mirar aqui para algun decorator??)
+  // Manu: Array de mensajes (Lo mismo necesitas mirar aqui para algun decorator??)
   final List<Map<String, String>> messages = [];
   bool isLoading = false;
 
@@ -20,7 +28,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
-    // Identificar el mensaje como nuestro, mostrar y rueda de carga mientras esperamos respuesta
+    // Manu: Identificar el mensaje como nuestro, mostrar y rueda de carga mientras esperamos respuesta
     setState(() {
       messages.add({"role": "user", "text": text});
       isLoading = true;
@@ -28,16 +36,17 @@ class _ChatScreenState extends State<ChatScreen> {
 
     _controller.clear();
 
-    final response = await widget.geminiService.sendMessage(text);
+    //final response = await widget.geminiService.sendMessage(text);
+    final response = await widget.secretKeeper.ask(text);
 
     setState(() {
-      // Ahora identificarlo como mensaje del bot, mostrar respuesta y quitar rueda de carga
+      // Manu: Ahora identificarlo como mensaje del bot, mostrar respuesta y quitar rueda de carga
       messages.add({"role": "bot", "text": response});
       isLoading = false;
     });
   }
 
-  //Ten en cuenta que luego los mensajes seran tuplas con quien habla y que dice, yo lo veo util para
+  // Manu: Ten en cuenta que luego los mensajes seran tuplas con quien habla y que dice, yo lo veo util para
   //meter el decorator, si quieres ahorrar en lineas de codigo dime y cambiamos
 
   Widget buildMessage(Map<String, String> msg) {
