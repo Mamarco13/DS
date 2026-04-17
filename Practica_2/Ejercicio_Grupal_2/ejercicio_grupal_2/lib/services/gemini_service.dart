@@ -1,65 +1,32 @@
-import 'package:flutter_gemini/flutter_gemini.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 
 class GeminiService {
-  final Gemini _gemini;
+  late final GenerativeModel _model;
+  late final ChatSession _chat;
 
-  GeminiService(String apiKey)
-      : _gemini = Gemini.init(apiKey: apiKey);
+  GeminiService(String apiKey, String systemPrompt){
+    _model = GenerativeModel(
+        model: 'gemini-3-flash-preview',
+        apiKey: apiKey
+    );
 
-  Future<String> sendMessage(String message) async {
-    try {
-      final response = await _gemini.prompt(
-        parts: [Part.text(message)],
-      );
-
-      if (response?.output != null) {
-        return response!.output!;
-      } else {
-        return "No response from Gemini.";
-      }
-    } catch (e) {
-      return "⏳ Estoy un poco saturado ahora mismo... inténtalo en unos segundos.";
-    }
+    _chat = _model.startChat(
+      history: [
+        Content.text(systemPrompt),
+      ],
+    );
   }
-}
-
-
-
-/*
-
-import 'package:flutter_gemini/flutter_gemini.dart';
-
-// PROPUESTA DE ANA: la IA mantiene un historial con el usuario
-class GeminiService {
-  final Gemini _gemini;
-
-  final List<Part> _history = [];
-
-  GeminiService(String apiKey)
-      : _gemini = Gemini.init(apiKey: apiKey);
 
   Future<String> sendMessage(String message) async {
     try {
-      _history.add(Part.text(message));
-
-      final response = await _gemini.prompt(
-        parts: _history,
+      final response = await _chat.sendMessage(
+          Content.text(message),
       );
 
-      if (response?.output != null) {
-        _history.add(Part.text(response!.output!));
-        return response.output!;
-      } else {
-        return "No response from Gemini.";
-      }
+      return response.text ?? "Sin respuesta";
     } catch (e) {
       return "Error: $e";
+      //return "⏳ Estoy un poco saturado ahora mismo...";
     }
   }
-
-  Future<void> setSystemPrompt(String prompt) async {
-    _history.add(Part.text(prompt));
-  }
 }
-
-*/

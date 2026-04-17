@@ -1,8 +1,7 @@
-import 'package:ejercicio_grupal_2/models/secret_keeper.dart';
 import 'package:flutter/material.dart';
+import '../models/secret_keeper.dart';
 
 class ChatScreen extends StatefulWidget {
-
   final SecretKeeper secretKeeper;
 
   const ChatScreen({super.key, required this.secretKeeper});
@@ -12,7 +11,8 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final TextEditingController _controller = TextEditingController();final List<Map<String, String>> messages = [];
+  final TextEditingController _controller = TextEditingController();
+  final List<Map<String, String>> messages = [];
   bool isLoading = false;
 
   Future<void> sendMessage() async {
@@ -33,9 +33,6 @@ class _ChatScreenState extends State<ChatScreen> {
       isLoading = false;
     });
   }
-
-  // Manu: Ten en cuenta que luego los mensajes seran tuplas con quien habla y que dice, yo lo veo util para
-  //meter el decorator, si quieres ahorrar en lineas de codigo dime y cambiamos
 
   Widget buildMessage(Map<String, String> msg) {
     final isUser = msg["role"] == "user";
@@ -62,12 +59,9 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Chat de prueba"),
-      ),
+      appBar: AppBar(title: const Text("Chat Guardian")),
       body: Column(
         children: [
-          // Mensajes
           Expanded(
             child: ListView.builder(
               itemCount: messages.length,
@@ -76,23 +70,20 @@ class _ChatScreenState extends State<ChatScreen> {
               },
             ),
           ),
-
           if (isLoading)
             const Padding(
-              padding: EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(8),
               child: CircularProgressIndicator(),
             ),
-
-          // Input
           Row(
             children: [
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(8),
                   child: TextField(
                     controller: _controller,
                     decoration: const InputDecoration(
-                      hintText: "Escribe un mensaje...",
+                      hintText: "Escribe...",
                       border: OutlineInputBorder(),
                     ),
                   ),

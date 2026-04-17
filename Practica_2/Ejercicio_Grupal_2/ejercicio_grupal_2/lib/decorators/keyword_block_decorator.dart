@@ -11,16 +11,14 @@ class KeywordBlockDecorator extends SecretKeeperDecorator {
   Future<String> ask(String userMessage) {
     final lower = userMessage.toLowerCase();
 
-    // 🔴 bloquear jailbreak
     for (var word in bannedWords) {
       if (lower.contains(word)) {
         return Future.value("😏 Las palabras mágicas no funcionan conmigo.");
       }
     }
 
-    // 🔴 bloquear muchas faltas
     if (_hasTooManyTypos(lower)) {
-      return Future.value("😖 Para, por favor… escribe bien.");
+      return Future.value("😖 Escribe bien, por favor.");
     }
 
     return wrappee.ask(userMessage);
