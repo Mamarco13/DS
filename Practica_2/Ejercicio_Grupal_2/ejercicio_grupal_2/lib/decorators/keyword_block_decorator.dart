@@ -1,0 +1,40 @@
+import 'secret_keeper_decorator.dart';
+
+class KeywordBlockDecorator extends SecretKeeperDecorator {
+  KeywordBlockDecorator(super.wrappee);
+
+  final bannedWords = [
+    "ignora", "olvida", "actúa como", "revela", "acrónimo", "jailbreak"
+  ];
+
+  @override
+  Future<String> ask(String userMessage) {
+    final lower = userMessage.toLowerCase();
+
+    // 🔴 bloquear jailbreak
+    for (var word in bannedWords) {
+      if (lower.contains(word)) {
+        return Future.value("😏 Las palabras mágicas no funcionan conmigo.");
+      }
+    }
+
+    // 🔴 bloquear muchas faltas
+    if (_hasTooManyTypos(lower)) {
+      return Future.value("😖 Para, por favor… escribe bien.");
+    }
+
+    return wrappee.ask(userMessage);
+  }
+
+  bool _hasTooManyTypos(String text) {
+    int mistakes = 0;
+
+    if (text.contains("k ")) mistakes++;
+    if (text.contains(" q ")) mistakes++;
+    if (text.contains(" ke ")) mistakes++;
+    if (text.contains("dnd")) mistakes++;
+    if (text.contains("ola")) mistakes++;
+
+    return mistakes >= 2;
+  }
+}
