@@ -1,10 +1,9 @@
 import 'package:flutter_gemini/flutter_gemini.dart';
 
+// PROPUESTA DE ANA: la IA mantiene un historial con el usuario
 class GeminiService {
   final Gemini _gemini;
 
-  // 🔹 Separación entre el prompt y el historial
-  final List<Part> _system = [];
   final List<Part> _history = [];
 
   GeminiService(String apiKey)
@@ -12,44 +11,27 @@ class GeminiService {
 
   Future<String> sendMessage(String message) async {
     try {
-      // Añadir mensaje del usuario
-      _history.add(Part.text("Usuario: $message"));
-
-      // Limitar historial (solo la conversación)
-      if (_history.length > 10) {
-        _history.removeRange(0, 2);
-      }
+      _history.add(Part.text(message));
 
       final response = await _gemini.prompt(
-        parts: [..._system, ..._history],
+        parts: _history,
       );
 
       if (response?.output != null) {
-        final output = response!.output!;
-
-        // Guardar respuesta del bot
-        _history.add(Part.text("Guardián: $output"));
-
-        return output;
-
+        _history.add(Part.text(response!.output!));
+        return response.output!;
       } else {
         return "No response from Gemini.";
       }
-
     } catch (e) {
-      return "⏳ Estoy un poco saturado ahora mismo... inténtalo en unos segundos.";
+      return "Error: $e";
     }
   }
 
-  // 🔹 Prompt del sistema separado
   Future<void> setSystemPrompt(String prompt) async {
-    _system.clear();
-    _system.add(Part.text(prompt));
+    _history.add(Part.text(prompt));
   }
 }
-
-
-
 //*/
 
 /* PROPUESTA DE MANU
@@ -71,7 +53,7 @@ class GeminiService {
         return "No response from Gemini.";
       }
     } catch (e) {
-      return "Error: $e";
+      return "⏳ Estoy un poco saturado ahora mismo... inténtalo en unos segundos.";
     }
   }
 }
