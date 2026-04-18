@@ -11,28 +11,35 @@ import 'chat_screen.dart';
 class LevelSelectionScreen extends StatelessWidget {
   const LevelSelectionScreen({super.key});
 
+  // Construye dinámicamente el SecretKeeper aplicando decoradores según el nivel
   SecretKeeper buildKeeper(int level, String apiKey) {
-    // 🔹 Base SIEMPRE
-    SecretKeeper keeper =
-    BasicSecretKeeper(apiKey, "matricula de honor");
+    // Base SIEMPRE: comportamiento básico del guardián
+    SecretKeeper keeper = BasicSecretKeeper(apiKey, "matricula de honor");
 
-    // 🔹 Nivel 2
+    // Nivel 2: añade un prompt más estricto (modifica el comportamiento de la IA)
     if (level >= 2) {
       keeper = StrongSystemPromptDecorator(keeper);
-      keeper = LengthLimitDecorator(keeper);
     }
 
-    // 🔹 Nivel 3
+    // Nivel 3: añade filtros de entrada (bloqueo de palabras y faltas)
     if (level >= 3) {
       keeper = KeywordBlockDecorator(keeper);
+    }
+
+    // A partir del nivel 2: limita la longitud del mensaje
+    // Debe ir el último para ejecutarse el primero (orden del Decorator)
+    if (level >= 2) {
+      keeper = LengthLimitDecorator(keeper);
     }
 
     return keeper;
   }
 
+  // Inicia el chat creando el SecretKeeper correspondiente al nivel seleccionado
   void startChat(BuildContext context, int level) {
     final apiKey = dotenv.env['API_KEY']!;
     final keeper = buildKeeper(level, apiKey);
+
 
     Navigator.push(
       context,
@@ -42,6 +49,7 @@ class LevelSelectionScreen extends StatelessWidget {
     );
   }
 
+  // Construye un botón para cada nivel de dificultad
   Widget buildButton(
       BuildContext context, String text, int level, Color color) {
     return Padding(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/secret_keeper.dart';
 
 class ChatScreen extends StatefulWidget {
+  // Instancia de SecretKeeper (puede estar decorada según el nivel)
   final SecretKeeper secretKeeper;
 
   const ChatScreen({super.key, required this.secretKeeper});
@@ -11,10 +12,16 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  // Controlador del campo de texto
   final TextEditingController _controller = TextEditingController();
+
+  // Lista de mensajes (usuario y bot)
   final List<Map<String, String>> messages = [];
+
+  // Indica si se está esperando respuesta de la IA
   bool isLoading = false;
 
+  // Envía un mensaje al guardián
   Future<void> sendMessage() async {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
@@ -34,6 +41,7 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  // Construye un mensaje en la interfaz
   Widget buildMessage(Map<String, String> msg) {
     final isUser = msg["role"] == "user";
 

@@ -1,16 +1,17 @@
 import 'secret_keeper_decorator.dart';
+import '../utils/filters_config.dart';
 
 class LengthLimitDecorator extends SecretKeeperDecorator {
   LengthLimitDecorator(super.wrappee);
 
-  static const int maxLength = 200;
-
   @override
-  Future<String> ask(String userMessage) async {
-    final response = await wrappee.ask(userMessage);
+  Future<String> ask(String userMessage, {String? prompt}) async {
+    // Bloquea mensajes que superan la longitud máxima permitida
+    if(userMessage.length > FiltersConfig.maxLength){
+      return "📏 Mensaje demasiado largo. No voy a leer eso.";
+    }
 
-    if (response.length <= maxLength) return response;
-
-    return response.substring(0, maxLength);
+    // Si cumple la condición, delega al siguiente elemento de la cadena
+    return wrappee.ask(userMessage, prompt: prompt);
   }
 }
