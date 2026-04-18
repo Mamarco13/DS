@@ -25,8 +25,8 @@ class GeminiService {
 
       return response.text ?? "Sin respuesta";
     } catch (e) {
-      return "Error: $e";
-      //return "⏳ Estoy un poco saturado ahora mismo...";
+      //return "Error: $e";
+      return "⏳ Estoy un poco saturado ahora mismo...";
     }
   }
 }
