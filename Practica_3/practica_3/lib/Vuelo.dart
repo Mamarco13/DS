@@ -6,11 +6,7 @@ class Vuelo implements ServicioTuristico {
   final double precioBase;
   final PoliticaVuelo politica;
 
-  Vuelo({
-    required this.id,
-    required this.precioBase,
-    required this.politica,
-  });
+  Vuelo({required this.id, required this.precioBase, required this.politica});
 
   @override
   double getPrecio() => politica.calcular(precioBase);
