@@ -799,14 +799,21 @@ class _FormVueloPageState extends State<FormVueloPage> {
     final esValido = _formKey.currentState?.validate() ?? false;
     if (!esValido) return;
 
-    Navigator.pop(
-      context,
-      Vuelo(
+    try {
+      final vuelo = Vuelo(
         id: _idCtrl.text.trim(),
         precioBase: double.parse(_precioCtrl.text.trim()),
         politica: _politica,
-      ),
-    );
+      );
+
+      Navigator.pop(context,vuelo);
+    } catch(e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(e.toString()),
+          ),
+      );
+    }
   }
 
   @override
@@ -920,15 +927,23 @@ class _FormHotelPageState extends State<FormHotelPage> {
     final esValido = _formKey.currentState?.validate() ?? false;
     if (!esValido) return;
 
-    Navigator.pop(
-      context,
-      Hotel(
+    try {
+      final hotel = Hotel(
         nombre: _nombreCtrl.text.trim(),
         precioNoche: double.parse(_precioCtrl.text.trim()),
         noches: int.parse(_nochesCtrl.text.trim()),
         politica: _politica,
-      ),
-    );
+      );
+
+      Navigator.pop(context, hotel);
+
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+        ),
+      );
+    }
   }
 
   @override
