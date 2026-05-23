@@ -3,6 +3,8 @@ import io
 from flask import Flask, jsonify, request
 import numpy as np
 import soundfile as sf
+import librosa
+from sklearn.metrics.pairwise import cosine_similarity as sklearn_cosine
 from scipy.signal import resample, stft
 
 app = Flask(__name__)
@@ -12,12 +14,8 @@ def read_audio(file_storage):
     data = file_storage.read()
     if not data:
         raise ValueError("empty file")
-
-    # soundfile lee wav, mp3, flac, etc. 
-    # dtype='float32' ya normaliza los valores automáticamente (entre -1.0 y 1.0)
     samples, sample_rate = sf.read(io.BytesIO(data), dtype='float32')
 
-    # Convertir a mono si tiene múltiples canales (estéreo)
     if samples.ndim > 1:
         samples = np.mean(samples, axis=1)
 
@@ -51,6 +49,22 @@ def cosine_similarity(spec_a, spec_b):
 
     return float(np.dot(a, b) / denom)
 
+def compute_mfcc_similarity(y1, sr1, y2, sr2):
+    # Extraer los MFCC (usualmente 13 o 20 coeficientes)
+    # n_mfcc=13 es el estándar para reconocimiento de voz
+    mfcc1 = librosa.feature.mfcc(y=y1, sr=sr1, n_mfcc=13)
+    mfcc2 = librosa.feature.mfcc(y=y2, sr=sr2, n_mfcc=13)
+
+    # Promedio temporal (para que los vectores tengan el mismo tamaño)
+    # Si quieres que el orden importe, deberías usar DTW en lugar de promediar.
+    mfcc1_mean = np.mean(mfcc1, axis=1).reshape(1, -1)
+    mfcc2_mean = np.mean(mfcc2, axis=1).reshape(1, -1)
+
+    # Calcular similitud coseno sobre los vectores de características
+    similarity = sklearn_cosine(mfcc1_mean, mfcc2_mean)[0][0]
+    
+    return float(similarity)
+
 
 @app.get("/health")
 def health():
@@ -63,7 +77,6 @@ def compare():
         return jsonify({"error": "missing audio1 or audio2"}), 400
 
     try:
-        # Ahora usamos read_audio, que soporta mp3 y wav
         sr1, y1 = read_audio(request.files["audio1"])
         sr2, y2 = read_audio(request.files["audio2"])
     except Exception as exc:
@@ -93,7 +106,6 @@ def compare():
             "equal": similarity >= threshold,
         }
     )
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
