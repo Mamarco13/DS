@@ -229,6 +229,113 @@ class Espectrograma {
     );
   }
 
+
+  double similitudMfcc(Espectrograma otro, {int nMfcc = 13}) {
+    // Extraer los MFCC de ambos espectrogramas
+    List<List<double>> mfccPropio = _extraerMfcc(nMfcc);
+    List<List<double>> mfccOtro = otro._extraerMfcc(nMfcc);
+
+    // Promedio temporal para aplanar los vectores
+    List<double> mfccPropioPromedio = _promedioTemporalMfcc(mfccPropio);
+    List<double> mfccOtroPromedio = _promedioTemporalMfcc(mfccOtro);
+
+    // Calcular y devolver la similitud usando tu método existente
+    return similitudCosenoVectores(mfccPropioPromedio, mfccOtroPromedio);
+  }
+
+  /// Extrae los coeficientes MFCC a partir de los frames del espectrograma
+  List<List<double>> _extraerMfcc(int nMfcc) {
+    if (frames.isEmpty || binsFrecuencia == 0) {
+      return [];
+    }
+
+    // CONFIGURACIÓN DEL BANCO DE FILTROS MEL
+    const int numMelBands = 40; 
+    final double maxFreq = sampleRate / 2.0;
+    
+    // Fórmulas de conversión Hz <-> Mel
+    double hzToMel(double hz) => 2595.0 * (log(1.0 + hz / 700.0) / ln10);
+    double melToHz(double mel) => 700.0 * (pow(10.0, mel / 2595.0) - 1.0);
+
+    final double maxMel = hzToMel(maxFreq);
+    
+    // Crear puntos espaciados uniformemente en la escala Mel
+    List<double> melPoints = List.generate(numMelBands + 2, (i) => i * maxMel / (numMelBands + 1));
+    List<double> hzPoints = melPoints.map((m) => melToHz(m)).toList();
+    
+    // Mapear esos puntos de Hz a los índices de nuestros bins del espectrograma
+    List<int> binPoints = hzPoints.map((hz) => ((binsFrecuencia - 1) * hz / maxFreq).floor()).toList();
+
+    // Construir la matriz de filtros triangulares [numMelBands][binsFrecuencia]
+    List<List<double>> fbank = List.generate(numMelBands, (_) => List.filled(binsFrecuencia, 0.0));
+    for (int i = 0; i < numMelBands; i++) {
+      int left = binPoints[i];
+      int center = binPoints[i + 1];
+      int right = binPoints[i + 2];
+
+      for (int j = left; j < center; j++) {
+        fbank[i][j] = (center == left) ? 0.0 : (j - left) / (center - left);
+      }
+      for (int j = center; j < right; j++) {
+        fbank[i][j] = (right == center) ? 0.0 : (right - j) / (right - center);
+      }
+    }
+
+    // APLICAR FILTROS MEL Y CALCULAR LOGARITMO
+    List<List<double>> logMelSpectrogram = []; // Formato temporal: [frame][bandaMel]
+    
+    for (final frame in frames) {
+      List<double> melEnergies = List.filled(numMelBands, 0.0);
+      for (int i = 0; i < numMelBands; i++) {
+        double energy = 0.0;
+        for (int j = 0; j < binsFrecuencia; j++) {
+          // Multiplicamos la magnitud del frame por el filtro triangular
+          energy += frame[j] * fbank[i][j];
+        }
+        melEnergies[i] = log(max(energy, 1e-10)); 
+      }
+      logMelSpectrogram.add(melEnergies);
+    }
+
+    //  APLICAR DCT-II (Transformada Discreta del Coseno)
+    // El resultado final lo queremos transpuesto [coeficiente][frame] para la similitud
+    List<List<double>> mfcc = List.generate(nMfcc, (_) => List.filled(numeroFrames, 0.0));
+
+    for (int f = 0; f < numeroFrames; f++) {
+      for (int k = 0; k < nMfcc; k++) {
+        double suma = 0.0;
+        for (int n = 0; n < numMelBands; n++) {
+          suma += logMelSpectrogram[f][n] * cos(pi * k * (n + 0.5) / numMelBands);
+        }
+        
+        // Normalización ortogonal (estándar en audio)
+        double factorNormalizacion = (k == 0) ? sqrt(1.0 / numMelBands) : sqrt(2.0 / numMelBands);
+        mfcc[k][f] = suma * factorNormalizacion;
+      }
+    }
+
+    return mfcc;
+  }
+
+  List<double> _promedioTemporalMfcc(List<List<double>> mfccMatrix) {
+    if (mfccMatrix.isEmpty) return <double>[];
+
+    int numCoeffs = mfccMatrix.length;
+    int numFrames = mfccMatrix[0].length;
+    
+    List<double> meanVector = List.filled(numCoeffs, 0.0);
+
+    for (int i = 0; i < numCoeffs; i++) {
+      double suma = 0.0;
+      for (int j = 0; j < numFrames; j++) {
+        suma += mfccMatrix[i][j];
+      }
+      meanVector[i] = suma / numFrames;
+    }
+
+    return meanVector;
+  }
+
   // =========================
   // SERIALIZACIÓN
   // =========================
