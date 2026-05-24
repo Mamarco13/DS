@@ -3,6 +3,10 @@
         "/^Set-Location 'c:\\\\Users\\\\mamar\\\\Desktop\\\\2ºCuatri\\\\DS\\\\Practicas\\\\DS\\\\Practica_4\\\\salvacion_app'; dart run bin/test_api\\.dart$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^flutter analyze lib/screens/audio_compare_screen\\.dart$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }

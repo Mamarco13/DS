@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'package:langchain/langchain.dart';
 import 'dart:typed_data';
 
 class Espectrograma {
@@ -150,8 +149,12 @@ class Espectrograma {
   // =========================
 
   double similitudCoseno(Espectrograma otro) {
-    return similitudCosenoVectores(_perfilEspectralPromedio(), otro._perfilEspectralPromedio(),
-    );
+    final perfil1 = _perfilEspectralPromedio();
+    final perfil2 = otro._perfilEspectralPromedio();
+
+    if (perfil1.isEmpty || perfil2.isEmpty) return 0.0;
+
+    return similitudCosenoVectores(perfil1, perfil2);
   }
 
   List<double> _perfilEspectralPromedio() {
@@ -168,27 +171,59 @@ class Espectrograma {
     int framesValidos = 0;
 
     for (final frame in frames) {
+
       if (frame.length < bins) {
         continue;
       }
 
+      // =========================
+      // ELIMINAR SILENCIO
+      // =========================
+
+      double energia = 0.0;
+
+      for (final v in frame) {
+        energia += v.abs();
+      }
+
+      energia /= frame.length;
+
+      // Ignorar frames silenciosos
+      if (energia < 0.00001) {
+        continue;
+      }
+
+      // =========================
+      // NORMALIZACIÓN FRAME
+      // =========================
+
       double maxValor = 0.0;
+
       for (int i = 1; i < bins; i++) {
+
         if (frame[i] > maxValor) {
           maxValor = frame[i];
         }
+
       }
 
-      if (maxValor <= 0.0) {
+      // Ignorar frames planos
+      if (maxValor <= 0.0001) {
         continue;
       }
 
       for (int i = 1; i < bins; i++) {
-        perfil[i - 1] += frame[i] / maxValor;
+
+        perfil[i - 1] += log(1.0 + frame[i]);
+
       }
 
       framesValidos++;
     }
+
+    print(
+      "Frames validos coseno: $framesValidos",
+    );
 
     if (framesValidos == 0) {
       return <double>[];
@@ -196,7 +231,6 @@ class Espectrograma {
 
     for (int i = 0; i < perfil.length; i++) {
       perfil[i] /= framesValidos;
-      perfil[i] = log(1.0 + perfil[i]);
     }
 
     final List<double> suavizado = List<double>.filled(perfil.length, 0.0);
@@ -218,31 +252,48 @@ class Espectrograma {
   }
 
   double similitudCosenoVectores(List<double> a, List<double> b) {
-    final int longitudComun = min(a.length, b.length);
-    if (longitudComun == 0) {
-      return 0.0;
+    final int n = min(a.length, b.length);
+    if (n == 0) return 0.0;
+
+    double dot = 0.0, normA = 0.0, normB = 0.0;
+    for (int i = 0; i < n; i++) {
+      dot  += a[i] * b[i];
+      normA += a[i] * a[i];
+      normB += b[i] * b[i];
     }
 
-    return cosineSimilarity(
-      a.sublist(0, longitudComun),
-      b.sublist(0, longitudComun),
-    );
+    final double denom = sqrt(normA) * sqrt(normB);
+    return denom < 1e-10 ? 0.0 : dot / denom;
   }
+  double similitudMfcc(Espectrograma otro) {
+    final mfcc1 = _extraerMfcc(13);
+    final mfcc2 = otro._extraerMfcc(13);
 
+    if (mfcc1.isEmpty || mfcc2.isEmpty) return 0.0;
 
-  double similitudMfcc(Espectrograma otro, {int nMfcc = 13}) {
-    // Extraer los MFCC de ambos espectrogramas
-    List<List<double>> mfccPropio = _extraerMfcc(nMfcc);
-    List<List<double>> mfccOtro = otro._extraerMfcc(nMfcc);
+    final nCoef = mfcc1.length;
+    final nFrames1 = mfcc1[0].length;
+    final nFrames2 = mfcc2[0].length;
+    final minFrames = min(nFrames1, nFrames2);
 
-    // Promedio temporal para aplanar los vectores
-    List<double> mfccPropioPromedio = _promedioTemporalMfcc(mfccPropio);
-    List<double> mfccOtroPromedio = _promedioTemporalMfcc(mfccOtro);
+    double suma = 0.0;
+    int validos = 0;
 
-    // Calcular y devolver la similitud usando tu método existente
-    return similitudCosenoVectores(mfccPropioPromedio, mfccOtroPromedio);
+    for (int f = 0; f < minFrames; f++) {
+      // Construir el vector MFCC del frame f para cada espectrograma
+      final vec1 = List.generate(nCoef, (k) => mfcc1[k][f]);
+      final vec2 = List.generate(nCoef, (k) => mfcc2[k][f]);
+
+      final s = similitudCosenoVectores(vec1, vec2);
+      if (!s.isNaN) {
+        suma += s;
+        validos++;
+      }
+    }
+
+    return validos > 0 ? suma / validos : 0.0;
   }
-
+  
   /// Extrae los coeficientes MFCC a partir de los frames del espectrograma
   List<List<double>> _extraerMfcc(int nMfcc) {
     if (frames.isEmpty || binsFrecuencia == 0) {
@@ -285,6 +336,19 @@ class Espectrograma {
     List<List<double>> logMelSpectrogram = []; // Formato temporal: [frame][bandaMel]
     
     for (final frame in frames) {
+      double energia = 0.0;
+      for (final v in frame) {
+        energia += v.abs();
+      }
+
+      energia /= frame.length;
+
+      if (energia < 0.00001) {
+        continue;
+      }
+      print(
+        "Energia frame MFCC: $energia",
+      );
       List<double> melEnergies = List.filled(numMelBands, 0.0);
       for (int i = 0; i < numMelBands; i++) {
         double energy = 0.0;
@@ -299,41 +363,58 @@ class Espectrograma {
 
     //  APLICAR DCT-II (Transformada Discreta del Coseno)
     // El resultado final lo queremos transpuesto [coeficiente][frame] para la similitud
-    List<List<double>> mfcc = List.generate(nMfcc, (_) => List.filled(numeroFrames, 0.0));
+    final totalFrames = logMelSpectrogram.length;
 
-    for (int f = 0; f < numeroFrames; f++) {
-      for (int k = 0; k < nMfcc; k++) {
-        double suma = 0.0;
-        for (int n = 0; n < numMelBands; n++) {
-          suma += logMelSpectrogram[f][n] * cos(pi * k * (n + 0.5) / numMelBands);
-        }
-        
-        // Normalización ortogonal (estándar en audio)
-        double factorNormalizacion = (k == 0) ? sqrt(1.0 / numMelBands) : sqrt(2.0 / numMelBands);
-        mfcc[k][f] = suma * factorNormalizacion;
-      }
-    }
+List<List<double>> mfcc =
+    List.generate(
+      nMfcc,
+      (_) => List.filled(totalFrames, 0.0),
+    );
 
-    return mfcc;
-  }
+    for (int f = 0; f < totalFrames; f++) {
 
-  List<double> _promedioTemporalMfcc(List<List<double>> mfccMatrix) {
-    if (mfccMatrix.isEmpty) return <double>[];
+    for (int k = 0; k < nMfcc; k++) {
 
-    int numCoeffs = mfccMatrix.length;
-    int numFrames = mfccMatrix[0].length;
-    
-    List<double> meanVector = List.filled(numCoeffs, 0.0);
-
-    for (int i = 0; i < numCoeffs; i++) {
       double suma = 0.0;
-      for (int j = 0; j < numFrames; j++) {
-        suma += mfccMatrix[i][j];
+
+      for (int n = 0; n < numMelBands; n++) {
+
+        suma += logMelSpectrogram[f][n] *
+            cos(pi * k * (n + 0.5) / numMelBands);
+
       }
-      meanVector[i] = suma / numFrames;
+
+      double factorNormalizacion =
+          (k == 0)
+              ? sqrt(1.0 / numMelBands)
+              : sqrt(2.0 / numMelBands);
+
+      mfcc[k][f] = suma * factorNormalizacion;
     }
 
-    return meanVector;
+    // =========================
+    // DEBUG MFCC
+    // =========================
+
+    if (f < 5) {
+
+      List<double> debug = [];
+
+      for (int k = 0; k < min(5, nMfcc); k++) {
+
+        debug.add(mfcc[k][f]);
+
+      }
+
+      print("MFCC FRAME $f:");
+      print(debug);
+
+    }
+  }
+    print(
+      "Frames MFCC validos: ${logMelSpectrogram.length}",
+    );
+    return mfcc;
   }
 
   // =========================
@@ -363,5 +444,51 @@ class Espectrograma {
       windowType:json["windowType"],
       overlap:json["overlap"].toDouble(),
     );
+  }
+
+  void debugResumen(String nombre) {
+
+    print("========== $nombre ==========");
+
+    print("Frames: $numeroFrames");
+
+    print("Bins: $binsFrecuencia");
+
+    print("Duracion: $duracionSegundos");
+
+    if (frames.isEmpty) {
+
+      print("SIN FRAMES");
+
+      return;
+    }
+
+    int mostrar = min(5, frames.length);
+
+    for (int i = 0; i < mostrar; i++) {
+
+      final frame = frames[i];
+
+      double energia = 0.0;
+
+      double maximo = 0.0;
+
+      for (final v in frame) {
+
+        energia += v.abs();
+
+        if (v > maximo) {
+          maximo = v;
+        }
+      }
+
+      energia /= frame.length;
+
+      print(
+        "Frame $i -> energia=$energia max=$maximo",
+      );
+    }
+
+    print("============================");
   }
 }
