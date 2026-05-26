@@ -2,9 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:salvacion_app/screens/enviar_sonido.dart';
 
 void main() {
-  // =========================================================================
+  
   // TipoPalabra – valores del enum
-  // =========================================================================
+
 
   group('TipoPalabra – valores del enum', () {
     test('el enum tiene exactamente 6 valores', () {
@@ -30,9 +30,7 @@ void main() {
     });
   });
 
-  // =========================================================================
   // TipoPalabraX (extensión) – getter label
-  // =========================================================================
 
   group('TipoPalabra – extensión label', () {
     test('verbo tiene label "Verbo"', () {
@@ -79,9 +77,8 @@ void main() {
     });
   });
 
-  // =========================================================================
   // TipoPalabra – conversión name → valor
-  // =========================================================================
+ 
 
   group('TipoPalabra – parseo desde name', () {
     test('se puede recuperar un valor desde su name usando firstWhere', () {

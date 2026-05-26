@@ -2,10 +2,6 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:salvacion_app/src/api/conversor_audio.dart';
 
-// ---------------------------------------------------------------------------
-// Helpers para construir cabeceras WAV sintéticas
-// ---------------------------------------------------------------------------
-
 /// Construye un WAV válido de 16-bit PCM mono con las muestras dadas.
 Uint8List _buildWav(List<int> samples) {
   final dataSize = samples.length * 2; // 2 bytes por muestra (Int16)
@@ -52,10 +48,8 @@ Uint8List _buildWav(List<int> samples) {
 }
 
 void main() {
-  // =========================================================================
+  
   // wavBytesToDoubles
-  // =========================================================================
-
   group('wavBytesToDoubles', () {
     test('devuelve lista vacía para datos menores o iguales a 44 bytes', () async {
       final shortData = Uint8List(44); // exactamente 44 bytes (solo cabecera)

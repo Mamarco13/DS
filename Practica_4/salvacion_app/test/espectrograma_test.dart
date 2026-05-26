@@ -3,12 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:salvacion_app/src/api/espectrograma.dart';
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 /// Genera un espectrograma sintético con [nFrames] frames de [bins] bins.
-/// Cada valor es [value] (constante).
 Espectrograma _makeConst(int nFrames, int bins, double value) {
   final frames = List.generate(
     nFrames,
@@ -36,9 +31,7 @@ Espectrograma _makeRandom(int nFrames, int bins, {int seed = 42}) {
 }
 
 void main() {
-  // =========================================================================
   // GETTERS
-  // =========================================================================
 
   group('Espectrograma – getters', () {
     test('numeroFrames devuelve la cantidad correcta de frames', () {
@@ -91,9 +84,7 @@ void main() {
     });
   });
 
-  // =========================================================================
   // CONSTRUCTOR Y VALORES POR DEFECTO
-  // =========================================================================
 
   group('Espectrograma – constructor', () {
     test('valores por defecto son los correctos', () {
@@ -119,9 +110,7 @@ void main() {
     });
   });
 
-  // =========================================================================
   // OPERACIONES
-  // =========================================================================
 
   group('Espectrograma – concatenar', () {
     test('concatenar une los frames de ambos espectrogramas', () {
@@ -190,9 +179,7 @@ void main() {
     });
   });
 
-  // =========================================================================
   // NORMALIZACIÓN
-  // =========================================================================
 
   group('Espectrograma – normalizar', () {
     test('los valores del espectrograma normalizado están entre 0 y 1', () {
@@ -238,10 +225,7 @@ void main() {
       expect(norm.estaVacio, isTrue);
     });
   });
-
-  // =========================================================================
   // ENERGÍA Y SILENCIO
-  // =========================================================================
 
   group('Espectrograma – energiaPromedio', () {
     test('energiaPromedio de espectrograma vacío es 0.0', () {
@@ -283,9 +267,7 @@ void main() {
     });
   });
 
-  // =========================================================================
   // SIMILITUD COSENO (vectores)
-  // =========================================================================
 
   group('Espectrograma – similitudCosenoVectores', () {
     test('vector idéntico tiene similitud 1.0', () {
@@ -317,9 +299,7 @@ void main() {
     });
   });
 
-  // =========================================================================
   // SIMILITUD COSENO (espectrogramas)
-  // =========================================================================
 
   group('Espectrograma – similitudCoseno entre espectrogramas', () {
     test('espectrograma idéntico con sí mismo tiene similitud 1.0', () {
@@ -337,9 +317,7 @@ void main() {
     });
   });
 
-  // =========================================================================
   // PERFIL ESPECTRAL PROMEDIO
-  // =========================================================================
 
   group('Espectrograma – perfilEspectralPromedio', () {
     test('devuelve lista vacía para espectrograma vacío', () {
@@ -361,9 +339,7 @@ void main() {
     });
   });
 
-  // =========================================================================
   // MFCC
-  // =========================================================================
 
   group('Espectrograma – extraerMfcc', () {
     test('devuelve lista vacía para espectrograma vacío', () {
@@ -392,9 +368,7 @@ void main() {
     });
   });
 
-  // =========================================================================
   // SERIALIZACIÓN
-  // =========================================================================
 
   group('Espectrograma – toJson / fromJson', () {
     test('toJson incluye todas las claves esperadas', () {
