@@ -221,9 +221,9 @@ class Espectrograma {
       framesValidos++;
     }
 
-    print(
+    /*print(
       "Frames validos coseno: $framesValidos",
-    );
+    );*/
 
     if (framesValidos == 0) {
       return <double>[];
@@ -346,9 +346,9 @@ class Espectrograma {
       if (energia < 0.00001) {
         continue;
       }
-      print(
+      /*print(
         "Energia frame MFCC: $energia",
-      );
+      );*/
       List<double> melEnergies = List.filled(numMelBands, 0.0);
       for (int i = 0; i < numMelBands; i++) {
         double energy = 0.0;
@@ -406,14 +406,14 @@ List<List<double>> mfcc =
 
       }
 
-      print("MFCC FRAME $f:");
-      print(debug);
+      /*print("MFCC FRAME $f:");
+      print(debug);*/
 
     }
   }
-    print(
+    /*print(
       "Frames MFCC validos: ${logMelSpectrogram.length}",
-    );
+    );*/
     return mfcc;
   }
 
