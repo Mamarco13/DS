@@ -74,6 +74,7 @@ flutter:
     - assets/la_1.mp3
     - assets/la_2.mp3
     - assets/moneda.mp3
+    - assets/prompt.txt
 
   # To add assets to your application, add an assets section, like this:
   # assets:
