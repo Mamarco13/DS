@@ -1,15 +1,17 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+# Fixtures para tests de integración de la API SalvacionBD
+# El campo espectrograma es jsonb: debe incluir frames, perfil y mfcc.
+# Los valores de frames tienen energía > 0.00001 para no ser filtrados como silencio.
 
-one:
-  texto: MyString
-  tipo: MyString
-  duracion: 1.5
-  espectrograma: 
-  lenguaje: one
+hola_klingon:
+  texto: hola
+  tipo: verbo
+  duracion: 0.8
+  espectrograma: '{"frames":[[0.5,0.6,0.7,0.8,0.9,0.8,0.7,0.6],[0.6,0.7,0.8,0.9,0.8,0.7,0.6,0.5],[0.7,0.8,0.9,0.8,0.7,0.6,0.5,0.4],[0.8,0.9,0.8,0.7,0.6,0.5,0.4,0.3]],"perfil":[0.5,0.6,0.7,0.8,0.7,0.6,0.5],"mfcc":[[0.1,0.2,0.1,0.2],[0.3,0.2,0.3,0.2],[-0.1,-0.2,-0.1,-0.2],[0.0,0.1,0.0,0.1],[0.2,0.1,0.2,0.1],[0.1,0.0,0.1,0.0],[0.0,0.1,0.0,0.1],[-0.1,0.0,-0.1,0.0],[0.1,0.2,0.1,0.2],[-0.2,-0.1,-0.2,-0.1],[0.0,0.1,0.0,0.1],[0.1,0.0,0.1,0.0],[0.2,0.1,0.2,0.1]],"chunkSize":1024,"sampleRate":44100,"windowType":"hanning","overlap":0.5,"duracion":0.046}'
+  lenguaje: klingon
 
-two:
-  texto: MyString
-  tipo: MyString
-  duracion: 1.5
-  espectrograma: 
-  lenguaje: two
+mundo_elvish:
+  texto: mundo
+  tipo: sustantivo
+  duracion: 1.2
+  espectrograma: '{"frames":[[0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2],[0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1],[0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.05],[0.6,0.5,0.4,0.3,0.2,0.1,0.05,0.02]],"perfil":[0.7,0.6,0.5,0.4,0.3,0.2,0.1],"mfcc":[[0.2,0.1,0.2,0.1],[0.1,0.2,0.1,0.2],[-0.2,-0.1,-0.2,-0.1],[0.1,0.0,0.1,0.0],[0.0,0.1,0.0,0.1],[0.1,0.2,0.1,0.2],[0.0,-0.1,0.0,-0.1],[-0.1,0.1,-0.1,0.1],[0.2,0.1,0.2,0.1],[-0.1,-0.2,-0.1,-0.2],[0.1,0.0,0.1,0.0],[0.0,0.1,0.0,0.1],[0.1,0.2,0.1,0.2]],"chunkSize":1024,"sampleRate":44100,"windowType":"hanning","overlap":0.5,"duracion":0.046}'
+  lenguaje: elvish

@@ -1,7 +1,8 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+# Fixtures para tests de integración de la API SalvacionBD
+# Cada lenguaje tiene un nombre único (validado por el modelo con uniqueness: true)
 
-one:
-  nombre: MyString
+klingon:
+  nombre: Klingon
 
-two:
-  nombre: MyString
+elvish:
+  nombre: Elvish
