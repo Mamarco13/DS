@@ -1,13 +1,49 @@
 class ComparadorEspectrograma
   UMBRAL = 0.6
 
-  def self.similitud(frames_input, frames_guardados)
-    perfil1 = perfil_espectral(frames_input)
-    perfil2 = perfil_espectral(frames_guardados)
+  def self.similitud(espectrograma_input, espectrograma_guardado, estrategia = 'coseno')
+    if estrategia == 'mcff'
+      similitud_estrategia_mfcc(espectrograma_input, espectrograma_guardado)
+    else
+      similitud_estrategia_coseno(espectrograma_input, espectrograma_guardado)
+    end
+  end
+
+  def self.similitud_estrategia_coseno(input, guardado)
+    perfil1 = input["perfil"] || perfil_espectral(input["frames"] || [])
+    perfil2 = guardado["perfil"] || perfil_espectral(guardado["frames"] || [])
 
     return 0.0 if perfil1.empty? || perfil2.empty?
 
     similitud_coseno(perfil1, perfil2)
+  end
+
+  def self.similitud_estrategia_mfcc(input, guardado)
+    mfcc1 = input["mfcc"]
+    mfcc2 = guardado["mfcc"]
+
+    return 0.0 if mfcc1.nil? || mfcc2.nil? || mfcc1.empty? || mfcc2.empty?
+
+    n_coef = mfcc1.length
+    n_frames1 = mfcc1[0].length
+    n_frames2 = mfcc2[0].length
+    min_frames = [n_frames1, n_frames2].min
+
+    suma = 0.0
+    validos = 0
+
+    min_frames.times do |f|
+      vec1 = n_coef.times.map { |k| mfcc1[k][f] }
+      vec2 = n_coef.times.map { |k| mfcc2[k][f] }
+
+      s = similitud_coseno(vec1, vec2)
+      unless s.nan?
+        suma += s
+        validos += 1
+      end
+    end
+
+    validos > 0 ? (suma / validos) : 0.0
   end
 
   def self.perfil_espectral(frames)

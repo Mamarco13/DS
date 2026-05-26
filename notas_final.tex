@@ -1,0 +1,163 @@
+El cliente accede a la interfaz y puede hacer las siguientes opciones:
+-	Crear nuevo lenguaje: puedes crear un lenguaje y dejarlo vacío
+-	Editar lenguaje (add, delete, edit): para editar y borrar tiene que existir. No hay límite de palabras
+-	Traducir (read): ningún limite. Si no entiende algo te da la opción de añadirlo a la BD
+
+
+% ================================================================
+%              FLUJO DE FUNCIONAMIENTO DEL SISTEMA
+% ================================================================
+
+COMPONENTES
+
+1. Cliente: interactúa con la interfaz, graba los sonidos, crea lenguajes y los edita, recibe traducción
+2. Coordinador: referido a todo lo relacionado con la interfaz y los otros componentes del sistema (API de espectogramas, filtros, BD...)
+3. Audio Parser: API encargada de transformar sonidos en espectogramas. 
+4. Base de datos: ¿qué tengo que explicar de la base de datos XD?
+5. Intérprete: recibe una frases con las traducciones literales. Le pasa filtros y luego lo transforma en un lenguaje más natural.
+
+
+CREAR LENGUAJE, EDITAR PALABRA, BORRAR PALABRA
+
+Cliente ---> Interfaz ---> Coordinador ---> BD
+
+En caso de error, la BD informaría al Coordinador
+
+
+TRADUCIR
+
+1. El cliente elige el lenguaje y le da a "traducir"
+2. Indica que empieza una frase, reproduce toda la frase (sonidos) e indica que ha finalizado la frase.
+3. Coordinador envía toda la frase al Audio Parser.
+4. Audio Parser separa los sonidos en palabras. Devuelve un array de espectrogramas (respetando el orden de los sonidos) y null cuando detecta un sonido mayor de "t_min_silencio" segundos. Los demás silencios los elimina. 
+5. Coordinador recibe el array de espectogramas y envía a la BD los espectrogramas, uno a uno. Sustituye los null por "---" o algo así, respetando en todo momento el orden de sonidos y silencios.
+5.1. La BD devuelve una palabra (su significado). 
+5.2. El Coordinador sigue enviando uno a uno los espectogramas hasta que el arary del espectogramas esté vacío. Si algún espectograma no tiene significado se considera como "unknonw" y se avisará al cliente. 
+6. El Coordinador forma un array de significados (frase_traducida) y lo envía al Intérprete (sigue siendo Flutter)
+7. El Intérprete filtra frase_traducida y forma la frase_traducida_filtrada.
+8. Luego se comunica con un LLM (con un prompt establecido) y le envía frase_traducida_filtrada para que la vuelva más natural. Ejemplo: yo gustar gustar tú --> yo gustar (pasado) tú --> A mí me gustas tú. Crea frase_final
+9. El LLM crea frase_final.
+10. El Intérprete le devuelve la frase_final al Coordinador para que se lo reproduzca al cliente. 
+
+AÑADIR PALABRA
+
+1. El cliente edita el lenguaje y le da a "añadir nueva palabra".
+2. Indica que empieza un sonido, lo reproduce y le da pausar. Indica el significado de ese sonido.
+3. El Coordinador envía el sonido al Audio Parser.
+4. El Audio Parser elimina los sonidos al inicio y al final (como un trim(), vaya) y devuelve el espectrograma del sonido.
+5. El Coordinador lo recibe y le envía a la base de datos el espectrograma y el sonido.
+6. La base de datos guarda la palabra
+7. En caso de algún error, la BD avisa a Fluter y este se lo comunica al cliente (con una interfaz bonica, chicos)
+
+
+
+% ================================================================
+%                       ENTRADAS / SALIDAS 
+% ================================================================
+
+1. Clase epsectograma. Devolverá distancia coseno, MCFF y el otro metodo. La propia API podrá comparar aplicando distintas estrategias
+
+2. Intérprete recibe un array de strings con los significados:
+    [
+    {
+        "palabra": "gustar",
+        "tipo": "verbo",
+        "duracion": 0.5
+    },
+    {
+        "palabra": "gustar",
+        "tipo": "verbo",
+        "duracion": 1.0
+    }
+    ]
+
+    Donde pueden ser:
+        - palabra: significado, "---" o ?
+        - tipo: verbo, adverbio, adejtivo, pronombre, sustantivo, otros (silencios, signos, desconocido...)
+        - duracion: proporción respecto a la duración guardada en la base de datos.
+
+    En caso de que haya 1 silencio (t_min_silencio de duración)
+    {
+        "palabra": "---",
+        "tipo": "otro",
+        "duracion": 0
+    }
+
+    En caso de que no exista una traducción del sonido en la BD
+    {
+        "palabra": "unknown",
+        "tipo": "otro",
+        "duracion": 0
+    }
+
+
+% ================================================================
+%                      REGLAS INTÉRPRETE
+% ================================================================
+
+
+1. Modificador por repetición inmediata
+
+    1.1. Verbos: 
+        - verbo --> verbo [presente o infinitivo]
+        - verbo verbo --> verbo [pasado]
+        - verbo verbo verbo --> verbo [futuro]
+    1.2. Adverbio / Adjetivo:
+        - adjetivo adjetivo --> adjetivo [mucho]
+        - adjetivo adjetivo adjetivo --> adjetivo [extremo]
+    1.3. Sustantivo:
+        - sustantivo sustantivo --> sustantivo [plural]
+    1.4. Pronombre: 
+        - pronombre pronombre --> [posesivo: pronombre]
+            Ejemplo: yo yo libro --> mi libro 
+
+2. Puntuación
+
+    2.1. "---" --> ","
+    2.2. "---" "---" --> "."
+
+3. Interrogación
+
+    3.1. Frase ? --> ¿ Frase ?
+    3.2. Frase ?? --> ¿ Frase ? [duda]
+    3.3. Exclamación: Frase ! --> ¡ Frase !
+
+4. Énfasis
+
+    Si la duración de una palabra es > t_min_énfasis --> se pone en mayúsculas
+
+5. Palabra desconocida
+
+    Si recibe "unknown", literalmente introduce "palabra desconocida".
+
+Limitar las repeticiones --> si una palabra se repite más de 3 veces, no se le aplicará ningún filtro. 
+
+
+
+% ================================================================
+%                        PALABRAS RESERVADAS
+% ================================================================
+
+- [] no se deben usar
+- ---  no se debe usar 
+- Si usamos "unknown" para sonidos sin significado conocido, el cliente no puede introducir un sonido que signifique "unknown" y que sea de tipo "otros"
+- ¡ o ¿ no se deben usar
+
+
+% ================================================================
+%                          PRUEBAS
+% ================================================================
+
+- 4 pruebas de integración (1 para cada operación de CRUD) 
+- Todas las pruebas componente que se puedan (zzzz)
+- Todas las pruebas unitarias que se puedan (cuantas más mejor)
+
+
+
+% ================================================================
+%                      PATRONES APLICADOS
+% ================================================================
+
+-Patrón Estrategia en a API a la hora de decidir que algoritmo se aplica para
+comparar los espectrogramas (cosineSimilarity, MCFF, ...)
+

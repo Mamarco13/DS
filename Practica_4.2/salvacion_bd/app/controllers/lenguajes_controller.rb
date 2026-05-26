@@ -33,9 +33,10 @@ class LenguajesController < ApplicationController
     end
 
     def buscar
-  frames_input = params[:espectrograma]&.dig("frames")
+  espectrograma_input = params[:espectrograma]
+  estrategia = params[:estrategia] || 'coseno'
 
-  if frames_input.nil?
+  if espectrograma_input.nil?
     render json: { error: "Falta el espectrograma" }, status: :bad_request
     return
   end
@@ -44,10 +45,10 @@ class LenguajesController < ApplicationController
   mejor_similitud = -1.0
 
   @lenguaje.palabras.each do |palabra|
-    frames_guardados = palabra.espectrograma&.dig("frames")
-    next if frames_guardados.nil?
+    espectrograma_guardado = palabra.espectrograma
+    next if espectrograma_guardado.nil?
 
-    s = ComparadorEspectrograma.similitud(frames_input, frames_guardados)
+    s = ComparadorEspectrograma.similitud(espectrograma_input, espectrograma_guardado, estrategia)
 
     if s > mejor_similitud
       mejor_similitud = s
@@ -58,6 +59,7 @@ class LenguajesController < ApplicationController
   if mejor_palabra.nil? || mejor_similitud < ComparadorEspectrograma::UMBRAL
     render json: { palabra: "unknown", tipo: "otro", duracion: 0 }
   else
+    frames_input = espectrograma_input["frames"] || []
     duracion_ratio = mejor_palabra.duracion&.positive? ?
       (frames_input.length.to_f / mejor_palabra.duracion) : 0.0
 

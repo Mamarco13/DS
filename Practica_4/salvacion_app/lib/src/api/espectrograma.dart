@@ -149,15 +149,15 @@ class Espectrograma {
   // =========================
 
   double similitudCoseno(Espectrograma otro) {
-    final perfil1 = _perfilEspectralPromedio();
-    final perfil2 = otro._perfilEspectralPromedio();
+    final perfil1 = perfilEspectralPromedio();
+    final perfil2 = otro.perfilEspectralPromedio();
 
     if (perfil1.isEmpty || perfil2.isEmpty) return 0.0;
 
     return similitudCosenoVectores(perfil1, perfil2);
   }
 
-  List<double> _perfilEspectralPromedio() {
+  List<double> perfilEspectralPromedio() {
     if (frames.isEmpty) {
       return <double>[];
     }
@@ -266,8 +266,8 @@ class Espectrograma {
     return denom < 1e-10 ? 0.0 : dot / denom;
   }
   double similitudMfcc(Espectrograma otro) {
-    final mfcc1 = _extraerMfcc(13);
-    final mfcc2 = otro._extraerMfcc(13);
+    final mfcc1 = extraerMfcc(13);
+    final mfcc2 = otro.extraerMfcc(13);
 
     if (mfcc1.isEmpty || mfcc2.isEmpty) return 0.0;
 
@@ -295,7 +295,7 @@ class Espectrograma {
   }
   
   /// Extrae los coeficientes MFCC a partir de los frames del espectrograma
-  List<List<double>> _extraerMfcc(int nMfcc) {
+  List<List<double>> extraerMfcc(int nMfcc) {
     if (frames.isEmpty || binsFrecuencia == 0) {
       return [];
     }
@@ -422,8 +422,16 @@ List<List<double>> mfcc =
   // =========================
 
   Map<String, dynamic> toJson(){
+    final perfil = perfilEspectralPromedio();
+    final mfcc = extraerMfcc(13);
+    
+    // Redondear dobles matemáticamente es mucho más rápido que toStringAsFixed
+    double trunc(double val) => (val * 10000).roundToDouble() / 10000;
+
     return {
-      "frames": frames.map((f) => f.toList(),).toList(),
+      "frames": frames.map((f) => f.map(trunc).toList()).toList(),
+      "perfil": perfil.map(trunc).toList(),
+      "mfcc": mfcc.map((arr) => arr.map(trunc).toList()).toList(),
       "chunkSize": chunkSize,
       "sampleRate": sampleRate,
       "windowType": windowType,

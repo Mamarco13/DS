@@ -40,7 +40,7 @@ class PalabrasController < ApplicationController
     end
 
     def set_palabra
-        @palabra = @lenguaje.palabras.find(params[:id])
+        @palabra = Palabra.find(params[:id])
     end
 
     def palabra_params
