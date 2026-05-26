@@ -93,6 +93,7 @@ class _TraductorScreenState extends State<TraductorScreen> {
       
       if (mounted) {
         setState(() {
+          //JSON con frase pocha cobrando sentido aqui!!!
           _traduccionLiteral = traduccion.where((item) => (item['duracion'] as num).toDouble() > 0.0).toList();
         });
       }
