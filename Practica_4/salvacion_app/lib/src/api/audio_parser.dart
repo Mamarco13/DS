@@ -49,15 +49,50 @@ class AudioParser {
     final int minSilentFrames = (tMinSilencio / durationPerFrame).ceil();
 
     print('AudioParser: Iniciando división por silencios...');
+    
+    // Calcular umbral dinámico basado en la energía del audio actual
+    List<double> energies = [];
+    double sumEnergy = 0;
+    double minEnergy = double.infinity;
+    double maxEnergy = 0.0;
+    
     for (var frame in frames) {
       double energy = 0;
       for (var mag in frame) {
         energy += mag;
       }
-      energy /= frame.length; // Calcular la energía promedio del frame
+      energy /= frame.length;
+      energies.add(energy);
+      sumEnergy += energy;
+      if (energy < minEnergy) minEnergy = energy;
+      if (energy > maxEnergy) maxEnergy = energy;
+    }
+    
+    double avgEnergy = frames.isEmpty ? 0 : sumEnergy / frames.length;
+    // El umbral dinámico se sitúa un poco por encima de la energía mínima
+    // o como una fracción de la energía promedio, lo que sea más estable.
+    double dynamicThreshold = minEnergy + (maxEnergy - minEnergy) * 0.05;
+    if (dynamicThreshold < 0.001) dynamicThreshold = 0.001; // fallback al valor empírico
+    
+    print('AudioParser: avgEnergy=$avgEnergy, minEnergy=$minEnergy, maxEnergy=$maxEnergy');
+    print('AudioParser: Umbral dinámico calculado=$dynamicThreshold');
 
-      // Si la energía del frame es muy baja, es silencio
-      if (energy < silenceThreshold) {
+    // Separar usando una ventana de suavizado para tolerar picos cortos de ruido
+    for (int i = 0; i < frames.length; i++) {
+      // Suavizar la energía usando los frames adyacentes para evitar falsos positivos por picos
+      double smoothedEnergy = energies[i];
+      int window = 2; // mirar 2 frames atrás y adelante
+      int count = 1;
+      for (int j = i - window; j <= i + window; j++) {
+        if (j >= 0 && j < energies.length && j != i) {
+          smoothedEnergy += energies[j];
+          count++;
+        }
+      }
+      smoothedEnergy /= count;
+
+      // Si la energía suavizada es muy baja, es silencio
+      if (smoothedEnergy < dynamicThreshold) {
         silentFramesCount++;
         
         // Si teníamos una palabra en progreso y entramos en un silencio largo
@@ -73,7 +108,7 @@ class AudioParser {
           }
         }
         silentFramesCount = 0;
-        currentWordFrames.add(frame);
+        currentWordFrames.add(frames[i]);
       }
     }
 

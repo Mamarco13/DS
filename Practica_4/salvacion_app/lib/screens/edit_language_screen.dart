@@ -324,84 +324,174 @@ class _EditLanguageScreenState extends State<EditLanguageScreen> {
     super.dispose();
   }
 
+  Widget _buildPanel({required String titulo, required IconData icono, required Widget child}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF111122).withOpacity(0.7),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.deepPurpleAccent.withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icono, color: Colors.deepPurpleAccent, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                titulo,
+                style: const TextStyle(
+                  color: Colors.deepPurpleAccent,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          const Divider(color: Colors.white24, height: 24),
+          child,
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Editar Lenguaje'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            LanguageSelector(controller: _lenguajeController),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _cargando ? null : _cargarPalabras,
-              child: const Text('Cargar Palabras'),
-            ),
-            const SizedBox(height: 16),
-            if (_cargando)
-              const Center(child: CircularProgressIndicator())
-            else if (_lenguajeIdActual != null)
-              Expanded(
+            Icon(Icons.edit_note),
+            SizedBox(width: 10),
+            Text('GESTIÓN DE DATOS'),
+          ],
+        ),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: RadialGradient(
+            colors: [Color(0xFF2A1A3A), Color(0xFF050510)],
+            radius: 1.5,
+            center: Alignment.bottomLeft,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildPanel(
+                titulo: "SELECCIÓN DE LENGUAJE",
+                icono: Icons.language,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      'Palabras en ${_lenguajeController.text}: ${_palabras.length}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: _palabras.isEmpty
-                          ? const Center(child: Text('No hay palabras registradas.'))
-                          : ListView.builder(
-                              itemCount: _palabras.length,
-                              itemBuilder: (context, index) {
-                                final palabra = _palabras[index];
-                                return Card(
-                                  child: ListTile(
-                                    title: Text(palabra['texto'] ?? ''),
-                                    subtitle: Text('Tipo: ${palabra['tipo']} | Duración: ${palabra['duracion'] ?? 0.0} s'),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        IconButton(
-                                          icon: const Icon(Icons.edit, color: Colors.blue),
-                                          onPressed: () => _editarPalabra(palabra),
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.delete, color: Colors.red),
-                                          onPressed: () => _eliminarPalabra(palabra['id']),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
+                    LanguageSelector(controller: _lenguajeController),
                     const SizedBox(height: 16),
-                    ElevatedButton(
+                    ElevatedButton.icon(
+                      onPressed: _cargando ? null : _cargarPalabras,
+                      icon: const Icon(Icons.download),
+                      label: const Text('CARGAR BASE DE DATOS', style: TextStyle(letterSpacing: 1.5)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.deepPurpleAccent.withOpacity(0.2),
+                        foregroundColor: Colors.deepPurpleAccent,
+                        side: const BorderSide(color: Colors.deepPurpleAccent),
                       ),
-                      onPressed: _eliminarLenguaje,
-                      child: const Text('ELIMINAR LENGUAJE'),
                     ),
                   ],
                 ),
-              )
-            else
-              const Expanded(
-                child: Center(
-                  child: Text('Selecciona un lenguaje y pulsa "Cargar Palabras".'),
-                ),
               ),
-          ],
+              const SizedBox(height: 16),
+              if (_cargando)
+                const Expanded(child: Center(child: CircularProgressIndicator(color: Colors.deepPurpleAccent)))
+              else if (_lenguajeIdActual != null)
+                Expanded(
+                  child: _buildPanel(
+                    titulo: "REGISTROS ENCONTRADOS (${_palabras.length})",
+                    icono: Icons.dataset,
+                    child: Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: _palabras.isEmpty
+                                ? const Center(child: Text('NO HAY DATOS EN ESTE SECTOR.', style: TextStyle(color: Colors.white54, letterSpacing: 2)))
+                                : ListView.builder(
+                                    itemCount: _palabras.length,
+                                    itemBuilder: (context, index) {
+                                      final palabra = _palabras[index];
+                                      return Container(
+                                        margin: const EdgeInsets.only(bottom: 8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black45,
+                                          border: Border.all(color: Colors.deepPurpleAccent.withOpacity(0.3)),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: ListTile(
+                                          leading: const Icon(Icons.memory, color: Colors.deepPurpleAccent),
+                                          title: Text(
+                                            (palabra['texto'] ?? '').toString().toUpperCase(),
+                                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1),
+                                          ),
+                                          subtitle: Text(
+                                            'Tipo: ${palabra['tipo']} | Dur: ${palabra['duracion'] ?? 0.0} s',
+                                            style: const TextStyle(color: Colors.white54, fontFamily: 'monospace'),
+                                          ),
+                                          trailing: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              IconButton(
+                                                icon: const Icon(Icons.edit, color: Colors.cyanAccent),
+                                                onPressed: () => _editarPalabra(palabra),
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(Icons.delete, color: Colors.redAccent),
+                                                onPressed: () => _eliminarPalabra(palabra['id']),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.redAccent.withOpacity(0.2),
+                              foregroundColor: Colors.redAccent,
+                              side: const BorderSide(color: Colors.redAccent),
+                            ),
+                            icon: const Icon(Icons.warning),
+                            label: const Text('PURGAR LENGUAJE', style: TextStyle(letterSpacing: 2)),
+                            onPressed: _eliminarLenguaje,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              else
+                const Expanded(
+                  child: Center(
+                    child: Text(
+                      'SELECCIONA UN SECTOR Y EXTRAE LOS DATOS.',
+                      style: TextStyle(color: Colors.white24, letterSpacing: 2, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
