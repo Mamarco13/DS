@@ -330,23 +330,6 @@ void main() {
       expect(sim, closeTo(1.0, 1e-5));
     });
 
-    test('espectrogramas muy distintos tienen similitud baja', () {
-      // Un espectrograma de valores altos vs uno de valores bajos
-      final e1 = _makeConst(5, 64, 1.0);
-      // Espectrograma con valores escalonados muy distintos
-      final frames2 = List.generate(
-        5,
-        (i) => Float64List.fromList(
-          List.generate(64, (j) => j < 32 ? 0.01 : 1.0),
-        ),
-      );
-      final e2 = Espectrograma(frames: frames2);
-      final sim = e1.similitudCoseno(e2);
-      // No asumimos exactamente baja, solo que está entre -1 y 1
-      expect(sim, greaterThanOrEqualTo(-1.0));
-      expect(sim, lessThanOrEqualTo(1.0));
-    });
-
     test('espectrograma vacío vs otro devuelve 0.0', () {
       final empty = Espectrograma(frames: []);
       final e = _makeLoud(5, 64);

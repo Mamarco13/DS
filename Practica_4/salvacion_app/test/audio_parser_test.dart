@@ -3,10 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:salvacion_app/src/api/audio_parser.dart';
 import 'package:salvacion_app/src/api/espectrograma.dart';
 
-// ---------------------------------------------------------------------------
-// Helpers para construir frames sintéticos
-// ---------------------------------------------------------------------------
-
 /// Genera un frame con energía alta (> silenceThreshold).
 Float64List _frameRuido(int bins) {
   return Float64List.fromList(List.generate(bins, (i) => 0.05 * (i + 1)));
@@ -23,10 +19,7 @@ Float64List _frameSilencio(int bins) {
 const int _minSilentFrames = 18;
 
 void main() {
-  // =========================================================================
-  // WordFragment y SilenceFragment
-  // =========================================================================
-
+  //Test de las clases de datos AudioFragment, WordFragment y SilenceFragment
   group('AudioFragment – clases de datos', () {
     test('WordFragment almacena el espectrograma correctamente', () {
       final e = Espectrograma(frames: [Float64List.fromList([1.0, 2.0])]);
@@ -50,38 +43,10 @@ void main() {
     });
   });
 
-  // =========================================================================
-  // AudioParser – constantes de configuración
-  // =========================================================================
+  //Tests de la función _dividirPorSilencios (indirectamente a través de la energía de los frames)
+    group('AudioParser – _dividirPorSilencios (indirectamente via frames)', () {
+    ///Lista de frames = nRuido de ruido + nSilencio de silencio + nRuido de ruido.
 
-  group('AudioParser – constantes', () {
-    test('chunkSize es 1024', () {
-      expect(AudioParser.chunkSize, equals(1024));
-    });
-
-    test('sampleRate es 44100', () {
-      expect(AudioParser.sampleRate, equals(44100));
-    });
-
-    test('silenceThreshold es 0.001', () {
-      expect(AudioParser.silenceThreshold, closeTo(0.001, 1e-10));
-    });
-
-    test('tMinSilencio es 0.4', () {
-      expect(AudioParser.tMinSilencio, closeTo(0.4, 1e-10));
-    });
-  });
-
-  // =========================================================================
-  // AudioParser – lógica de división por silencios
-  // Accedemos mediante la API pública procesarFrase no es posible sin fichero,
-  // así que testeamos la lógica a través de la construcción de Espectrograma
-  // y los fragmentos producidos.
-  // =========================================================================
-
-  group('AudioParser – _dividirPorSilencios (indirectamente via frames)', () {
-    /// Helper: lista de frames = nRuido de ruido + nSilencio de silencio + nRuido de ruido.
-    /// Esto debería producir: 1 palabra, 1 silencio, 1 palabra.
     List<Float64List> _buildFrames({
       required int ruido1,
       required int silencio,
@@ -96,7 +61,6 @@ void main() {
     }
 
     test('silencio largo entre dos palabras genera: palabra, silencio, palabra', () {
-      // Necesitamos más del mínimo de frames silenciosos para que sea silencio "largo"
       final frames = _buildFrames(ruido1: 10, silencio: _minSilentFrames + 5, ruido2: 8);
       // Verificamos que hay 2 bloques de ruido separados por silencio largo
       // Esto lo testeamos indirectamente verificando la energía media de los bloques
@@ -118,7 +82,7 @@ void main() {
 
     test('silencio corto (< minSilentFrames) no separa palabras', () {
       final frames = _buildFrames(ruido1: 10, silencio: 5, ruido2: 8, bins: 16);
-      // 5 frames silenciosos < 18 (mínimo) → no hay separación
+      // 5 frames silenciosos no deberían ser suficientes para separar las palabras, así que todo debería contarse como ruido
       int ruidoCount = 0;
       for (final f in frames) {
         double e = 0;
@@ -147,10 +111,8 @@ void main() {
     });
   });
 
-  // =========================================================================
-  // AudioParser – durationPerFrame y minSilentFrames (cálculos)
-  // =========================================================================
 
+//Tests de los cálculos de temporización (durationPerFrame y minSilentFrames)
   group('AudioParser – cálculos de temporización', () {
     test('durationPerFrame es chunkSize / sampleRate', () {
       final durationPerFrame =

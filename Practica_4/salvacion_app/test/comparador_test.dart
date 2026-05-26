@@ -3,10 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:salvacion_app/src/api/comparador.dart';
 import 'package:salvacion_app/src/api/espectrograma.dart';
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 Espectrograma _makeConst(int nFrames, int bins, double value) {
   final frames = List.generate(
     nFrames,
@@ -15,7 +11,7 @@ Espectrograma _makeConst(int nFrames, int bins, double value) {
   return Espectrograma(frames: frames);
 }
 
-/// Espectrograma con señal tipo "tono bajo" (primeras frecuencias altas)
+/// Espectrograma con señal tipo "tono bajo" 
 Espectrograma _makeTonoA(int nFrames, int bins) {
   final frames = List.generate(
     nFrames,
@@ -30,7 +26,7 @@ Espectrograma _makeTonoA(int nFrames, int bins) {
   return Espectrograma(frames: frames);
 }
 
-/// Espectrograma con señal tipo "tono alto" (frecuencias altas dominantes)
+/// Espectrograma con señal tipo "tono alto"
 Espectrograma _makeTonoB(int nFrames, int bins) {
   final frames = List.generate(
     nFrames,
@@ -46,10 +42,8 @@ Espectrograma _makeTonoB(int nFrames, int bins) {
 }
 
 void main() {
-  // =========================================================================
   // COMPARADOR COSENO
-  // =========================================================================
-
+  
   group('ComparadorCoseno', () {
     late ComparadorCoseno comparador;
 
@@ -57,6 +51,7 @@ void main() {
       comparador = ComparadorCoseno();
     });
 
+    //Test de la clase ComparadorCoseno (umbral, similitud, comparar)
     test('umbral por defecto es 0.6', () {
       expect(comparador.umbral, closeTo(0.6, 1e-10));
     });
@@ -97,9 +92,7 @@ void main() {
     });
   });
 
-  // =========================================================================
   // COMPARADOR MFCC
-  // =========================================================================
 
   group('ComparadorMFCC', () {
     late ComparadorMFCC comparador;
@@ -113,7 +106,7 @@ void main() {
     });
 
     test('similitud de un espectrograma consigo mismo es > 0.9', () {
-      // Usamos frames con energía suficiente para que MFCC no esté vacío
+      
       final frames = List.generate(
         10,
         (i) => Float64List.fromList(List.generate(513, (j) => (j + 1) * 0.001 * (i + 1))),
@@ -139,9 +132,7 @@ void main() {
     });
   });
 
-  // =========================================================================
   // INTERFAZ POLIMÓRFICA (Comparador abstracto)
-  // =========================================================================
 
   group('Comparador (polimorfismo)', () {
     test('ComparadorCoseno implementa la interfaz Comparador', () {
