@@ -138,7 +138,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             Icon(Icons.space_dashboard),
             SizedBox(width: 10),
-            Text('SISTEMA CENTRAL'),
+            Text('PROYECTO RYAN GOSLING'),
           ],
         ),
       ),
@@ -156,7 +156,7 @@ class HomeScreen extends StatelessWidget {
             children: [
               _buildMenuCard(
                 context: context,
-                title: 'Añadir Palabra (CRUD)',
+                title: 'Añadir Palabra',
                 icon: Icons.mic_external_on,
                 color: Colors.cyanAccent,
                 onTap: () {

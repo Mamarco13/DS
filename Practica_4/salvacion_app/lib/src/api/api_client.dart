@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'espectrograma.dart';
 
 class RailsApiClient {
-  // Ajusta la URL según corresponda (por defecto 10.0.2.2 en emulador Android o localhost en Windows/iOS)
   static const String baseUrl = 'http://127.0.0.1:3000';
 
   Future<int?> obtenerLenguajeId(String nombre) async {

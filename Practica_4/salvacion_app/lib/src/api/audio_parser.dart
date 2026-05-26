@@ -50,7 +50,7 @@ class AudioParser {
 
     print('AudioParser: Iniciando división por silencios...');
     
-    // 1. Calcular umbral dinámico basado en la energía del audio actual
+    // Calcular umbral dinámico basado en la energía del audio actual
     List<double> energies = [];
     double sumEnergy = 0;
     double minEnergy = double.infinity;
@@ -77,7 +77,7 @@ class AudioParser {
     print('AudioParser: avgEnergy=$avgEnergy, minEnergy=$minEnergy, maxEnergy=$maxEnergy');
     print('AudioParser: Umbral dinámico calculado=$dynamicThreshold');
 
-    // 2. Separar usando una ventana de suavizado para tolerar picos cortos de ruido
+    // Separar usando una ventana de suavizado para tolerar picos cortos de ruido
     for (int i = 0; i < frames.length; i++) {
       // Suavizar la energía usando los frames adyacentes para evitar falsos positivos por picos
       double smoothedEnergy = energies[i];

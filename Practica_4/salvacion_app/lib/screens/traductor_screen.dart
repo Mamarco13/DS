@@ -186,6 +186,7 @@ class _TraductorScreenState extends State<TraductorScreen> {
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         padding: const EdgeInsets.all(20),
+                        alignment: Alignment.center,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: _grabando ? Colors.redAccent.withOpacity(0.2) : Colors.greenAccent.withOpacity(0.1),

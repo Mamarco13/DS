@@ -261,7 +261,7 @@ class _PrepararAudioRailsScreenState extends State<PrepararAudioRailsScreen> {
           children: [
             Icon(Icons.satellite_alt),
             SizedBox(width: 10),
-            Text('AÑADIR PALABRA (CRUD)'),
+            Text('AÑADIR PALABRA'),
           ],
         ),
       ),
@@ -331,6 +331,7 @@ class _PrepararAudioRailsScreenState extends State<PrepararAudioRailsScreen> {
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         padding: const EdgeInsets.all(20),
+                        alignment: Alignment.center,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: _grabando ? Colors.redAccent.withOpacity(0.2) : Colors.cyanAccent.withOpacity(0.1),
