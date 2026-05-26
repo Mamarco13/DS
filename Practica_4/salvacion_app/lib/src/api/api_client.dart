@@ -140,6 +140,43 @@ class RailsApiClient {
     }
   }
 
+  Future<bool> actualizarPalabra(
+    int palabraId,
+    String texto,
+    String tipo,
+    double? duracion,
+    Espectrograma? espectrograma,
+  ) async {
+    try {
+      final Map<String, dynamic> palabraData = {
+        'texto': texto,
+        'tipo': tipo,
+      };
+      if (duracion != null) palabraData['duracion'] = duracion;
+      if (espectrograma != null) palabraData['espectrograma'] = espectrograma.toJson();
+
+      final payload = {
+        'palabra': palabraData
+      };
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/palabras/$palabraId'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        return true;
+      } else {
+        print('Error en actualizarPalabra: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Excepción en actualizarPalabra: $e');
+      return false;
+    }
+  }
+
   Future<bool> eliminarLenguaje(int lenguajeId) async {
     try {
       final response = await http.delete(Uri.parse('$baseUrl/lenguajes/$lenguajeId'));

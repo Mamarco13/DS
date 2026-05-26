@@ -93,7 +93,7 @@ class _TraductorScreenState extends State<TraductorScreen> {
       
       if (mounted) {
         setState(() {
-          _traduccionLiteral = traduccion;
+          _traduccionLiteral = traduccion.where((item) => (item['duracion'] as num).toDouble() > 0.0).toList();
         });
       }
     } catch (e) {
@@ -181,44 +181,21 @@ class _TraductorScreenState extends State<TraductorScreen> {
               ),
             if (_traduccionLiteral != null) ...[
               const Text(
-                'Traducción Literal:',
+                'Salida (JSON):',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
               const SizedBox(height: 12),
               Expanded(
-                child: ListView.builder(
-                  itemCount: _traduccionLiteral!.length,
-                  itemBuilder: (context, index) {
-                    final item = _traduccionLiteral![index];
-                    final String palabra = item['palabra'];
-                    final String tipo = item['tipo'];
-                    final double duracion = (item['duracion'] as num).toDouble();
-                    
-                    IconData icon;
-                    if (palabra == '---') {
-                      icon = Icons.pause_circle_outline;
-                    } else if (palabra == 'unknown') {
-                      icon = Icons.help_outline;
-                    } else {
-                      icon = Icons.check_circle_outline;
-                    }
-
-                    return ListTile(
-                      leading: Icon(icon),
-                      title: Text(palabra, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text('Tipo: $tipo | Duración: ${duracion.toStringAsFixed(2)} s'),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                color: Colors.grey[200],
-                child: Text(
-                  _traduccionLiteral!.map((e) => e['palabra']).join(' '),
-                  style: const TextStyle(fontSize: 20),
-                  textAlign: TextAlign.center,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  color: Colors.grey[200],
+                  child: SingleChildScrollView(
+                    child: SelectableText(
+                      const JsonEncoder.withIndent('  ').convert(_traduccionLiteral),
+                      style: const TextStyle(fontFamily: 'monospace', fontSize: 16),
+                    ),
+                  ),
                 ),
               )
             ]
