@@ -1,15 +1,5 @@
 // =============================================================================
-// TESTS DE INTEGRACIÓN – RailsApiClient
-// =============================================================================
-//
-// Estos tests realizan peticiones HTTP REALES contra el servidor Rails.
-// Requisito: el servidor debe estar corriendo en http://127.0.0.1:3000
-//
-// Ejecución:
-//   flutter test test/integration_api_test.dart
-//
-// NOTA: Cada test crea sus propios datos y los elimina al terminar,
-// por lo que pueden ejecutarse en cualquier orden sin dejar basura en la BD.
+// TESTS DE INTEGRACIÓN
 // =============================================================================
 
 import 'dart:convert';
@@ -63,7 +53,7 @@ Future<int?> _crearLenguajeDirecto(String nombre) async {
 }
 
 // ===========================================================================
-// SUITE PRINCIPAL
+// PRINCIPAL
 // ===========================================================================
 
 void main() {
@@ -73,7 +63,7 @@ void main() {
   // LENGUAJES – CRUD
   // =========================================================================
 
-  group('[Integración] Lenguajes – CRUD', () {
+  group('Lenguajes – CRUD', () {
     late String nombre;
 
     setUp(() {
@@ -151,7 +141,7 @@ void main() {
   // PALABRAS – CRUD
   // =========================================================================
 
-  group('[Integración] Palabras – CRUD', () {
+  group('Palabras – CRUD', () {
     late int lenguajeId;
     late String lenguajeNombre;
 
@@ -283,7 +273,7 @@ void main() {
   // BUSCAR – Endpoint de traducción
   // =========================================================================
 
-  group('[Integración] Buscar – endpoint de traducción', () {
+  group('Buscar – endpoint de traducción', () {
     late int lenguajeId;
     late String lenguajeNombre;
 
@@ -367,7 +357,7 @@ void main() {
   // FLUJO COMPLETO END-TO-END
   // =========================================================================
 
-  group('[Integración] Flujo completo end-to-end', () {
+  group('Flujo completo end-to-end', () {
     test(
         'Ciclo completo: crear lenguaje → añadir palabras → buscar → actualizar → eliminar',
         () async {
