@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:record/record.dart';
+import 'package:path_provider/path_provider.dart';
 import '../src/api/api_client.dart';
+import '../src/api/espectrograma.dart';
+import '../src/api/fft.dart';
 import '../src/widgets/language_selector.dart';
-
+import 'enviar_sonido.dart';
 class EditLanguageScreen extends StatefulWidget {
   const EditLanguageScreen({super.key});
 
@@ -59,6 +63,175 @@ class _EditLanguageScreenState extends State<EditLanguageScreen> {
         });
       }
     }
+  }
+
+  Future<void> _editarPalabra(Map<String, dynamic> palabra) async {
+    final TextEditingController textoController = TextEditingController(text: palabra['texto']);
+    
+    TipoPalabra tipoSeleccionado = TipoPalabra.values.firstWhere(
+      (e) => e.name == palabra['tipo'],
+      orElse: () => TipoPalabra.otro,
+    );
+
+    final AudioRecorder recorder = AudioRecorder();
+    Espectrograma? nuevoEspectrograma;
+    bool grabando = false;
+    bool guardando = false;
+
+    Future<String> getRutaAudio() async {
+      final dir = await getTemporaryDirectory();
+      final time = DateTime.now().millisecondsSinceEpoch;
+      return '${dir.path}/audio_edit_$time.wav';
+    }
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            Future<void> toggleGrabacion() async {
+              try {
+                if (grabando) {
+                  final path = await recorder.stop();
+                  if (path != null) {
+                    final frames = await buildSpectrogram(path);
+                    setStateDialog(() {
+                      nuevoEspectrograma = Espectrograma(frames: frames).normalizar();
+                      grabando = false;
+                    });
+                  }
+                  return;
+                }
+
+                final permiso = await recorder.hasPermission();
+                if (!permiso) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Sin permisos de micrófono')),
+                    );
+                  }
+                  return;
+                }
+
+                final path = await getRutaAudio();
+                await recorder.start(
+                  const RecordConfig(
+                    encoder: AudioEncoder.wav,
+                    sampleRate: 44100,
+                    numChannels: 1,
+                  ),
+                  path: path,
+                );
+
+                setStateDialog(() {
+                  grabando = true;
+                });
+              } catch (e) {
+                debugPrint('Error grabando audio: $e');
+              }
+            }
+
+            Future<void> guardarCambios() async {
+              setStateDialog(() {
+                guardando = true;
+              });
+
+              double? duracion;
+              if (nuevoEspectrograma != null) {
+                duracion = nuevoEspectrograma!.numeroFrames / 100.0;
+              }
+
+              final exito = await _apiClient.actualizarPalabra(
+                palabra['id'],
+                textoController.text.trim(),
+                tipoSeleccionado.name,
+                duracion,
+                nuevoEspectrograma,
+              );
+
+              setStateDialog(() {
+                guardando = false;
+              });
+
+              if (exito) {
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Palabra actualizada')),
+                  );
+                }
+                _cargarPalabras();
+              } else {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Error al actualizar')),
+                  );
+                }
+              }
+            }
+
+            return AlertDialog(
+              title: const Text('Editar Palabra'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: textoController,
+                      decoration: const InputDecoration(
+                        labelText: 'Texto',
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<TipoPalabra>(
+                      value: tipoSeleccionado,
+                      decoration: const InputDecoration(
+                        labelText: 'Tipo de palabra',
+                      ),
+                      items: TipoPalabra.values
+                          .map((tipo) => DropdownMenuItem(
+                                value: tipo,
+                                child: Text(tipo.label),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setStateDialog(() {
+                            tipoSeleccionado = value;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: toggleGrabacion,
+                      child: Text(grabando ? 'Detener grabación' : 'Grabar nuevo audio'),
+                    ),
+                    if (nuevoEspectrograma != null)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8.0),
+                        child: Text('Nuevo espectrograma listo', style: TextStyle(color: Colors.green)),
+                      ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancelar'),
+                ),
+                ElevatedButton(
+                  onPressed: guardando ? null : guardarCambios,
+                  child: guardando ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Guardar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    recorder.dispose();
   }
 
   Future<void> _eliminarPalabra(int palabraId) async {
@@ -192,9 +365,18 @@ class _EditLanguageScreenState extends State<EditLanguageScreen> {
                                   child: ListTile(
                                     title: Text(palabra['texto'] ?? ''),
                                     subtitle: Text('Tipo: ${palabra['tipo']} | Duración: ${palabra['duracion'] ?? 0.0} s'),
-                                    trailing: IconButton(
-                                      icon: const Icon(Icons.delete, color: Colors.red),
-                                      onPressed: () => _eliminarPalabra(palabra['id']),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.edit, color: Colors.blue),
+                                          onPressed: () => _editarPalabra(palabra),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete, color: Colors.red),
+                                          onPressed: () => _eliminarPalabra(palabra['id']),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 );
