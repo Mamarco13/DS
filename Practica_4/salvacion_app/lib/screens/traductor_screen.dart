@@ -198,7 +198,7 @@ class _TraductorScreenState extends State<TraductorScreen> {
                     final item = _traduccionLiteral![index];
                     final String palabra = item['palabra'];
                     final String tipo = item['tipo'];
-                    final double duracion = item['duracion'];
+                    final double duracion = (item['duracion'] as num).toDouble();
                     
                     IconData icon;
                     if (palabra == '---') {
