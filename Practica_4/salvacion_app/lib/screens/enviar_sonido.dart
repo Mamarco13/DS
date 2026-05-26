@@ -256,75 +256,210 @@ class _PrepararAudioRailsScreenState extends State<PrepararAudioRailsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Preparar audio para Rails'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
-              controller: _textoController,
-              decoration: const InputDecoration(
-                labelText: 'Texto',
-                hintText: 'Escribe aquí el string que quieres enviar',
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (_) => setState(() {}),
-            ),
-            const SizedBox(height: 16),
-            LanguageSelector(controller: _lenguajeController),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<TipoPalabra>(
-              value: _tipoSeleccionado,
-              decoration: const InputDecoration(
-                labelText: 'Tipo de palabra',
-                border: OutlineInputBorder(),
-              ),
-              items: TipoPalabra.values
-                  .map(
-                    (tipo) => DropdownMenuItem(
-                      value: tipo,
-                      child: Text(tipo.label),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) {
-                if (value == null) return;
-                setState(() {
-                  _tipoSeleccionado = value;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _toggleGrabacion,
-              child: Text(_grabando ? 'Detener grabación' : 'Grabar audio'),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _espectrograma == null
-                  ? 'Sin espectrograma generado'
-                  : 'Espectrograma listo: ${_espectrograma!.numeroFrames} frames',
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _preparando ? null : _prepararPayload,
-              child: Text(_preparando ? 'Preparando...' : 'Preparar payload'),
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: _preparando ? null : _enviarARails,
-              child: const Text('Enviar palabra a Rails'),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Payload preparado',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            SelectableText(payloadPreview),
+            Icon(Icons.satellite_alt),
+            SizedBox(width: 10),
+            Text('AÑADIR PALABRA (CRUD)'),
           ],
+        ),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: RadialGradient(
+            colors: [Color(0xFF1A1A3A), Color(0xFF050510)],
+            radius: 1.5,
+            center: Alignment.topLeft,
+          ),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildPanel(
+                titulo: "PARÁMETROS DE SEÑAL",
+                icono: Icons.settings_input_component,
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _textoController,
+                      style: const TextStyle(color: Colors.cyanAccent, fontFamily: 'monospace'),
+                      decoration: const InputDecoration(
+                        labelText: 'Mensaje de Texto',
+                        hintText: 'Ingresa los datos a transmitir...',
+                        prefixIcon: Icon(Icons.text_fields, color: Colors.cyanAccent),
+                      ),
+                      onChanged: (_) => setState(() {}),
+                    ),
+                    const SizedBox(height: 16),
+                    LanguageSelector(controller: _lenguajeController),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<TipoPalabra>(
+                      value: _tipoSeleccionado,
+                      dropdownColor: const Color(0xFF1A1A2E),
+                      style: const TextStyle(color: Colors.cyanAccent, fontFamily: 'monospace'),
+                      decoration: const InputDecoration(
+                        labelText: 'Clasificación',
+                        prefixIcon: Icon(Icons.category, color: Colors.cyanAccent),
+                      ),
+                      items: TipoPalabra.values
+                          .map((tipo) => DropdownMenuItem(
+                                value: tipo,
+                                child: Text(tipo.label.toUpperCase()),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() {
+                          _tipoSeleccionado = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildPanel(
+                titulo: "MÓDULO DE CAPTURA",
+                icono: Icons.mic,
+                child: Column(
+                  children: [
+                    GestureDetector(
+                      onTap: _toggleGrabacion,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _grabando ? Colors.redAccent.withOpacity(0.2) : Colors.cyanAccent.withOpacity(0.1),
+                          border: Border.all(
+                            color: _grabando ? Colors.redAccent : Colors.cyanAccent,
+                            width: _grabando ? 4 : 2,
+                          ),
+                          boxShadow: [
+                            if (_grabando)
+                              BoxShadow(
+                                color: Colors.redAccent.withOpacity(0.6),
+                                blurRadius: 20,
+                                spreadRadius: 5,
+                              )
+                            else
+                              BoxShadow(
+                                color: Colors.cyanAccent.withOpacity(0.3),
+                                blurRadius: 10,
+                                spreadRadius: 2,
+                              ),
+                          ],
+                        ),
+                        child: Icon(
+                          _grabando ? Icons.stop : Icons.mic_none,
+                          size: 40,
+                          color: _grabando ? Colors.redAccent : Colors.cyanAccent,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _grabando ? "GRABANDO SEÑAL..." : "INICIAR CAPTURA",
+                      style: TextStyle(
+                        color: _grabando ? Colors.redAccent : Colors.cyanAccent,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: _espectrograma == null ? Colors.black45 : Colors.greenAccent.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: _espectrograma == null ? Colors.white24 : Colors.greenAccent,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _espectrograma == null ? Icons.warning_amber_rounded : Icons.check_circle_outline,
+                            color: _espectrograma == null ? Colors.orangeAccent : Colors.greenAccent,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _espectrograma == null
+                                ? 'Espectrograma: OFFLINE'
+                                : 'Espectrograma: ONLINE (${_espectrograma!.numeroFrames} frames)',
+                            style: TextStyle(
+                              color: _espectrograma == null ? Colors.orangeAccent : Colors.greenAccent,
+                              fontFamily: 'monospace',
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _preparando ? null : _prepararPayload,
+                      icon: _preparando
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.cyanAccent),
+                            )
+                          : const Icon(Icons.memory),
+                      label: Text(_preparando ? 'PROCESANDO...' : 'ENCRIPTAR DATOS', style: const TextStyle(fontSize: 12)),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _preparando ? null : _enviarARails,
+                      icon: const Icon(Icons.send),
+                      label: const Text('TRANSMITIR A RAILS', style: TextStyle(fontSize: 12)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurpleAccent.withOpacity(0.2),
+                        side: const BorderSide(color: Colors.deepPurpleAccent),
+                        foregroundColor: Colors.deepPurpleAccent,
+                        shadowColor: Colors.deepPurpleAccent,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _buildPanel(
+                titulo: "REGISTRO DE DATOS (PAYLOAD)",
+                icono: Icons.code,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.black87,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.cyanAccent.withOpacity(0.5)),
+                  ),
+                  child: SelectableText(
+                    payloadPreview,
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      color: Colors.greenAccent,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

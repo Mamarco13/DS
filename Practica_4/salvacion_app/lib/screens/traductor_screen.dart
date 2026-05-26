@@ -93,8 +93,8 @@ class _TraductorScreenState extends State<TraductorScreen> {
       
       if (mounted) {
         setState(() {
-          //JSON con frase pocha cobrando sentido aqui!!!
-          _traduccionLiteral = traduccion.where((item) => (item['duracion'] as num).toDouble() > 0.0).toList();
+          // JSON completo sin filtrar palabras desconocidas
+          _traduccionLiteral = traduccion;
         });
       }
     } catch (e) {
@@ -123,85 +123,202 @@ class _TraductorScreenState extends State<TraductorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Traductor Universal'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Mantén pulsado o dale a grabar para decir la frase. La frase será dividida en palabras y enviada a la base de datos.',
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 16),
-            LanguageSelector(controller: _lenguajeController),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _traduciendo ? null : _toggleGrabacion,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _grabando ? Colors.red : null,
-                padding: const EdgeInsets.all(16),
-              ),
-              child: Text(
-                _grabando ? 'Detener y Traducir' : 'Iniciar Frase',
-                style: const TextStyle(fontSize: 18),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('Estrategia: ', style: TextStyle(fontSize: 16)),
-                DropdownButton<String>(
-                  value: _estrategia,
-                  items: const [
-                    DropdownMenuItem(value: 'coseno', child: Text('Coseno (Perfil)')),
-                    DropdownMenuItem(value: 'mcff', child: Text('MFCC')),
-                  ],
-                  onChanged: (String? val) {
-                    if (val != null) {
-                      setState(() {
-                        _estrategia = val;
-                      });
-                    }
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (_traduciendo)
-              const Center(
+            Icon(Icons.translate),
+            SizedBox(width: 10),
+            Text('TRADUCTOR UNIVERSAL'),
+          ],
+        ),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: RadialGradient(
+            colors: [Color(0xFF1A1A3A), Color(0xFF050510)],
+            radius: 1.5,
+            center: Alignment.topRight,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildPanel(
+                titulo: "CONFIGURACIÓN DEL INTÉRPRETE",
+                icono: Icons.settings_voice,
                 child: Column(
                   children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('Analizando audio y buscando en la BD...'),
+                    LanguageSelector(controller: _lenguajeController),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: _estrategia,
+                      dropdownColor: const Color(0xFF1A1A2E),
+                      style: const TextStyle(color: Colors.cyanAccent, fontFamily: 'monospace'),
+                      decoration: const InputDecoration(
+                        labelText: 'Algoritmo de Correlación',
+                        prefixIcon: Icon(Icons.memory, color: Colors.cyanAccent),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'coseno', child: Text('DISTANCIA COSENO')),
+                        DropdownMenuItem(value: 'mcff', child: Text('COEFICIENTES MFCC')),
+                      ],
+                      onChanged: (String? val) {
+                        if (val != null) {
+                          setState(() {
+                            _estrategia = val;
+                          });
+                        }
+                      },
+                    ),
                   ],
                 ),
               ),
-            if (_traduccionLiteral != null) ...[
-              const Text(
-                'Salida (JSON):',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              const SizedBox(height: 16),
+              _buildPanel(
+                titulo: "RECEPCIÓN DE MENSAJE",
+                icono: Icons.mic,
+                child: Column(
+                  children: [
+                    GestureDetector(
+                      onTap: _traduciendo ? null : _toggleGrabacion,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _grabando ? Colors.redAccent.withOpacity(0.2) : Colors.greenAccent.withOpacity(0.1),
+                          border: Border.all(
+                            color: _grabando ? Colors.redAccent : Colors.greenAccent,
+                            width: _grabando ? 4 : 2,
+                          ),
+                          boxShadow: [
+                            if (_grabando)
+                              BoxShadow(
+                                color: Colors.redAccent.withOpacity(0.6),
+                                blurRadius: 20,
+                                spreadRadius: 5,
+                              )
+                            else
+                              BoxShadow(
+                                color: Colors.greenAccent.withOpacity(0.3),
+                                blurRadius: 10,
+                                spreadRadius: 2,
+                              ),
+                          ],
+                        ),
+                        child: Icon(
+                          _grabando ? Icons.stop : Icons.mic_none,
+                          size: 40,
+                          color: _grabando ? Colors.redAccent : Colors.greenAccent,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _grabando ? "INTERCEPTANDO..." : "INICIAR INTERCEPCIÓN",
+                      style: TextStyle(
+                        color: _grabando ? Colors.redAccent : Colors.greenAccent,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  color: Colors.grey[200],
-                  child: SingleChildScrollView(
-                    child: SelectableText(
-                      const JsonEncoder.withIndent('  ').convert(_traduccionLiteral),
-                      style: const TextStyle(fontFamily: 'monospace', fontSize: 16),
+              const SizedBox(height: 16),
+              if (_traduciendo)
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(color: Colors.cyanAccent),
+                        const SizedBox(height: 16),
+                        Text(
+                          'DECODIFICANDO SEÑAL...',
+                          style: TextStyle(
+                            color: Colors.cyanAccent.withOpacity(0.8),
+                            fontFamily: 'monospace',
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              )
-            ]
-          ],
+              if (_traduccionLiteral != null)
+                Expanded(
+                  child: _buildPanel(
+                    titulo: "RESULTADO (JSON)",
+                    icono: Icons.code,
+                    child: Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.black87,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.cyanAccent.withOpacity(0.5)),
+                        ),
+                        child: SingleChildScrollView(
+                          child: SelectableText(
+                            const JsonEncoder.withIndent('  ').convert(_traduccionLiteral),
+                            style: const TextStyle(
+                              fontFamily: 'monospace',
+                              color: Colors.greenAccent,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildPanel({required String titulo, required IconData icono, required Widget child}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF111122).withOpacity(0.7),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.cyanAccent.withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icono, color: Colors.cyanAccent, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                titulo,
+                style: const TextStyle(
+                  color: Colors.cyanAccent,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          const Divider(color: Colors.white24, height: 24),
+          child,
+        ],
       ),
     );
   }
