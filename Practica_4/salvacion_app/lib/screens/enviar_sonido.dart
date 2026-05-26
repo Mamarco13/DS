@@ -6,6 +6,7 @@ import 'package:record/record.dart';
 
 import '../src/api/espectrograma.dart';
 import '../src/api/fft.dart';
+import '../src/api/api_client.dart';
 
 enum TipoPalabra { verbo, sustantivo, adjetivo, pronombre, otro}
 
@@ -37,6 +38,7 @@ class PrepararAudioRailsScreen extends StatefulWidget {
 class _PrepararAudioRailsScreenState extends State<PrepararAudioRailsScreen> {
   final AudioRecorder _recorder = AudioRecorder();
   final TextEditingController _textoController = TextEditingController();
+  final TextEditingController _lenguajeController = TextEditingController(text: "MiLenguaje");
 
   TipoPalabra _tipoSeleccionado = TipoPalabra.verbo;
   Espectrograma? _espectrograma;
@@ -150,9 +152,7 @@ class _PrepararAudioRailsScreenState extends State<PrepararAudioRailsScreen> {
     }
   }
 
-  Future<void> _enviarPlaceholder() async {
-    final payload = _buildPayload();
-
+  Future<void> _enviarARails() async {
     if (_espectrograma == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -162,17 +162,87 @@ class _PrepararAudioRailsScreenState extends State<PrepararAudioRailsScreen> {
       return;
     }
 
-    debugPrint('Aquí irá el POST a Rails:');
-    debugPrint(jsonEncode(payload));
+    final texto = _textoController.text.trim();
+    if (texto.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Escribe un texto antes de enviar')),
+      );
+      return;
+    }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Listo para conectar con Rails')),
-    );
+    setState(() {
+      _preparando = true;
+    });
+
+    try {
+      final client = RailsApiClient();
+      final nombreLenguaje = _lenguajeController.text.trim();
+      if (nombreLenguaje.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Escribe un nombre para el lenguaje')),
+        );
+        setState(() { _preparando = false; });
+        return;
+      }
+
+      int? langId = await client.obtenerLenguajeId(nombreLenguaje);
+      if (langId == null) {
+        final creado = await client.crearLenguaje(nombreLenguaje);
+        if (creado) {
+          langId = await client.obtenerLenguajeId(nombreLenguaje);
+        }
+      }
+
+      if (langId == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error: No se pudo obtener o crear el lenguaje')),
+        );
+        return;
+      }
+
+      // La duración en segundos (approx) del espectrograma, se puede calcular 
+      // asumiendo 44100 / window size. Por ahora pondremos un estimado según frames o 1.0.
+      // O si preferimos, la duración se extrae de otra forma, pero según el backend espera un double.
+      double duracion = _espectrograma!.numeroFrames / 100.0; // aprox
+
+      final exito = await client.anadirPalabra(
+        langId,
+        texto,
+        _tipoSeleccionado.name,
+        duracion,
+        _espectrograma!,
+      );
+
+      if (!mounted) return;
+      if (exito) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Palabra guardada exitosamente en la BD')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al guardar la palabra')),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error en envío: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Excepción durante el envío a Rails')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _preparando = false;
+        });
+      }
+    }
   }
 
   @override
   void dispose() {
     _textoController.dispose();
+    _lenguajeController.dispose();
     _recorder.dispose();
     super.dispose();
   }
@@ -198,6 +268,15 @@ class _PrepararAudioRailsScreenState extends State<PrepararAudioRailsScreen> {
                 border: OutlineInputBorder(),
               ),
               onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _lenguajeController,
+              decoration: const InputDecoration(
+                labelText: 'Lenguaje de destino',
+                hintText: 'Ej: MiLenguaje',
+                border: OutlineInputBorder(),
+              ),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<TipoPalabra>(
@@ -239,8 +318,8 @@ class _PrepararAudioRailsScreenState extends State<PrepararAudioRailsScreen> {
             ),
             const SizedBox(height: 12),
             ElevatedButton(
-              onPressed: _enviarPlaceholder,
-              child: const Text('Simular envío a Rails'),
+              onPressed: _preparando ? null : _enviarARails,
+              child: const Text('Enviar palabra a Rails'),
             ),
             const SizedBox(height: 24),
             const Text(
