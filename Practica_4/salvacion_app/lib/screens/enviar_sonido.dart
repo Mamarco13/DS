@@ -7,8 +7,9 @@ import 'package:record/record.dart';
 import '../src/api/espectrograma.dart';
 import '../src/api/fft.dart';
 import '../src/api/api_client.dart';
+import '../src/widgets/language_selector.dart';
 
-enum TipoPalabra { verbo, sustantivo, adjetivo, pronombre, otro}
+enum TipoPalabra { verbo, sustantivo, adjetivo, pronombre, adverbio, otro}
 
 extension TipoPalabraX on TipoPalabra {
   String get label {
@@ -21,6 +22,8 @@ extension TipoPalabraX on TipoPalabra {
         return 'Adjetivo';
       case TipoPalabra.pronombre:
         return 'Pronombre';
+      case TipoPalabra.adverbio:
+        return 'Adverbio';
       case TipoPalabra.otro:
         return 'Otro';
     }
@@ -270,14 +273,7 @@ class _PrepararAudioRailsScreenState extends State<PrepararAudioRailsScreen> {
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 16),
-            TextField(
-              controller: _lenguajeController,
-              decoration: const InputDecoration(
-                labelText: 'Lenguaje de destino',
-                hintText: 'Ej: MiLenguaje',
-                border: OutlineInputBorder(),
-              ),
-            ),
+            LanguageSelector(controller: _lenguajeController),
             const SizedBox(height: 16),
             DropdownButtonFormField<TipoPalabra>(
               value: _tipoSeleccionado,

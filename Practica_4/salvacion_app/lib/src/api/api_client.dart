@@ -24,6 +24,20 @@ class RailsApiClient {
     }
   }
 
+  Future<List<Map<String, dynamic>>> obtenerLenguajes() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/lenguajes'));
+      if (response.statusCode == 200) {
+        final List<dynamic> lenguajes = jsonDecode(response.body);
+        return lenguajes.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      print('Error en obtenerLenguajes: $e');
+      return [];
+    }
+  }
+
   Future<bool> crearLenguaje(String nombre) async {
     try {
       final response = await http.post(
@@ -101,4 +115,39 @@ class RailsApiClient {
       return null;
     }
   }
+
+  Future<List<Map<String, dynamic>>> obtenerPalabras(int lenguajeId) async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/lenguajes/$lenguajeId/palabras'));
+      if (response.statusCode == 200) {
+        final List<dynamic> palabras = jsonDecode(response.body);
+        return palabras.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      print('Error en obtenerPalabras: $e');
+      return [];
+    }
+  }
+
+  Future<bool> eliminarPalabra(int palabraId) async {
+    try {
+      final response = await http.delete(Uri.parse('$baseUrl/palabras/$palabraId'));
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      print('Error en eliminarPalabra: $e');
+      return false;
+    }
+  }
+
+  Future<bool> eliminarLenguaje(int lenguajeId) async {
+    try {
+      final response = await http.delete(Uri.parse('$baseUrl/lenguajes/$lenguajeId'));
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      print('Error en eliminarLenguaje: $e');
+      return false;
+    }
+  }
 }
+

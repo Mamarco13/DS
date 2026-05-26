@@ -17,26 +17,26 @@ class Coordinador {
     print('Coordinador: Lenguaje $nombreLenguaje encontrado con ID $langId');
 
     // 2. Usar Audio Parser para dividir la frase
-    final List<Espectrograma?> fragmentos = await AudioParser.procesarFrase(rutaAudio);
+    final List<AudioFragment> fragmentos = await AudioParser.procesarFrase(rutaAudio);
     print('Coordinador: Frase dividida en ${fragmentos.length} fragmentos.');
 
     // 3. Iterar sobre los fragmentos y consultar a la BD uno por uno
     final List<Map<String, dynamic>> traduccionLiteral = [];
 
     for (int i = 0; i < fragmentos.length; i++) {
-      var espectrograma = fragmentos[i];
-      if (espectrograma == null) {
-        print('Coordinador: Fragmento $i es un silencio.');
+      var fragmento = fragmentos[i];
+      if (fragmento is SilenceFragment) {
+        print('Coordinador: Fragmento $i es un silencio de ${fragmento.duracion}s.');
         // Es un silencio prolongado
         traduccionLiteral.add({
           "palabra": "---",
           "tipo": "otro",
-          "duracion": 0.0,
+          "duracion": fragmento.duracion,
         });
-      } else {
+      } else if (fragmento is WordFragment) {
         print('Coordinador: Fragmento $i es una palabra. Consultando API (Estrategia: $estrategia)...');
         // Consultar BD
-        final resultado = await _apiClient.buscarTraduccion(langId, espectrograma, estrategia);
+        final resultado = await _apiClient.buscarTraduccion(langId, fragmento.espectrograma, estrategia);
         
         if (resultado != null) {
           print('Coordinador: Resultado de API: ${resultado["palabra"]}');

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/enviar_sonido.dart';
 import 'screens/traductor_screen.dart';
+import 'screens/edit_language_screen.dart';
 
 void main() {
   runApp(const MiApp());
@@ -51,6 +52,16 @@ class HomeScreen extends StatelessWidget {
                 );
               },
               child: const Text('Traductor Universal'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const EditLanguageScreen()),
+                );
+              },
+              child: const Text('Editar / Eliminar Lenguaje'),
             ),
           ],
         ),

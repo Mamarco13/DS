@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
 import '../src/coordinador.dart';
+import '../src/widgets/language_selector.dart';
 
 class TraductorScreen extends StatefulWidget {
   const TraductorScreen({super.key});
@@ -133,14 +134,7 @@ class _TraductorScreenState extends State<TraductorScreen> {
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
-            TextField(
-              controller: _lenguajeController,
-              decoration: const InputDecoration(
-                labelText: 'Lenguaje origen',
-                hintText: 'Ej: MiLenguaje',
-                border: OutlineInputBorder(),
-              ),
-            ),
+            LanguageSelector(controller: _lenguajeController),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _traduciendo ? null : _toggleGrabacion,
@@ -212,7 +206,7 @@ class _TraductorScreenState extends State<TraductorScreen> {
                     return ListTile(
                       leading: Icon(icon),
                       title: Text(palabra, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text('Tipo: $tipo | Duración: ${duracion.toStringAsFixed(2)}'),
+                      subtitle: Text('Tipo: $tipo | Duración: ${duracion.toStringAsFixed(2)} s'),
                     );
                   },
                 ),

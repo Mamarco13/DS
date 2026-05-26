@@ -3,6 +3,18 @@ import 'package:fftea/fftea.dart';
 import 'conversor_audio.dart';
 import 'espectrograma.dart';
 
+abstract class AudioFragment {}
+
+class WordFragment extends AudioFragment {
+  final Espectrograma espectrograma;
+  WordFragment(this.espectrograma);
+}
+
+class SilenceFragment extends AudioFragment {
+  final double duracion;
+  SilenceFragment(this.duracion);
+}
+
 class AudioParser {
   // Configuración de silencios
   static const int chunkSize = 1024;
@@ -10,7 +22,7 @@ class AudioParser {
   static const double silenceThreshold = 0.001; // Ajustado empíricamente a la energía promedio
   static const double tMinSilencio = 0.4; // 0.4 segundos
 
-  static Future<List<Espectrograma?>> procesarFrase(String rutaAudio) async {
+  static Future<List<AudioFragment>> procesarFrase(String rutaAudio) async {
     print('AudioParser: Iniciando procesarFrase. Leyendo WAV desde $rutaAudio');
     final List<double> audio = await wavADoubles(rutaAudio);
     print('AudioParser: WAV leído. Total muestras: ${audio.length}');
@@ -27,8 +39,8 @@ class AudioParser {
     return _dividirPorSilencios(allFrames);
   }
 
-  static List<Espectrograma?> _dividirPorSilencios(List<Float64List> frames) {
-    final List<Espectrograma?> result = [];
+  static List<AudioFragment> _dividirPorSilencios(List<Float64List> frames) {
+    final List<AudioFragment> result = [];
     List<Float64List> currentWordFrames = [];
     int silentFramesCount = 0;
     
@@ -50,12 +62,16 @@ class AudioParser {
         
         // Si teníamos una palabra en progreso y entramos en un silencio largo
         if (silentFramesCount == minSilentFrames && currentWordFrames.isNotEmpty) {
-          result.add(Espectrograma(frames: currentWordFrames).normalizar());
-          result.add(null); // Añadimos el separador de silencio
+          result.add(WordFragment(Espectrograma(frames: currentWordFrames).normalizar()));
           currentWordFrames = [];
         }
       } else {
-        // Si hay sonido
+        // Si hay sonido y venimos de un silencio largo
+        if (silentFramesCount >= minSilentFrames) {
+          if (result.isNotEmpty) {
+            result.add(SilenceFragment(silentFramesCount * durationPerFrame));
+          }
+        }
         silentFramesCount = 0;
         currentWordFrames.add(frame);
       }
@@ -63,7 +79,9 @@ class AudioParser {
 
     // Al terminar, si quedó una palabra pendiente, la añadimos
     if (currentWordFrames.isNotEmpty) {
-      result.add(Espectrograma(frames: currentWordFrames).normalizar());
+      result.add(WordFragment(Espectrograma(frames: currentWordFrames).normalizar()));
+    } else if (silentFramesCount >= minSilentFrames && result.isNotEmpty) {
+      result.add(SilenceFragment(silentFramesCount * durationPerFrame));
     }
 
     print('AudioParser: División terminada. Total fragmentos (palabras y silencios): ${result.length}');
